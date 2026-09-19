@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VEILGUARD — SOC Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<style>
+  :root{
+    --bg:#0a0f1a; --bg2:#0f1626; --panel:#121b2d; --panel2:#16223a;
+    --line:#223049; --text:#dbe4f0; --muted:#8595ad;
+    --accent:#52a8e0; --accent2:#7c6cf0; --ok:#46c08a; --warn:#e3a94a; --alarm:#ff4356;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:
+      radial-gradient(1100px 560px at 82% -12%, rgba(82,168,224,.09), transparent 60%),
+      radial-gradient(900px 500px at 10% 8%, rgba(124,108,240,.06), transparent 55%),
+      var(--bg);
+    color:var(--text); font-family:'Inter',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased; min-height:100vh;
+  }
+  .mono{font-family:'JetBrains Mono',monospace}
+  .wrap{max-width:1360px;margin:0 auto;padding:0 22px 60px}
+
+  header{position:sticky;top:0;z-index:30;
+    background:linear-gradient(var(--bg),rgba(10,15,26,.82));
+    backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .head-in{max-width:1360px;margin:0 auto;padding:15px 22px;
+    display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  .brand{display:flex;align-items:baseline;gap:12px}
+  .brand h1{font-family:'Space Grotesk';font-weight:700;font-size:25px;letter-spacing:-.02em}
+  .brand h1 span{color:var(--accent)}
+  .brand .sub{color:var(--muted);font-size:13px}
+  .controls{display:flex;align-items:center;gap:10px}
+  .api-dot{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted)}
+  .dot{width:8px;height:8px;border-radius:50%}
+  .dot.up{background:var(--ok);box-shadow:0 0 8px var(--ok)}
+  .dot.down{background:var(--alarm);box-shadow:0 0 8px var(--alarm)}
+  button.act{font-family:'Space Grotesk';font-weight:600;font-size:13px;
+    background:var(--panel2);color:var(--text);border:1px solid var(--line);
+    border-radius:8px;padding:8px 14px;cursor:pointer;transition:.15s}
+  button.act:hover{border-color:var(--accent)}
+  button.act:disabled{opacity:.5;cursor:not-allowed}
+  button.primary{background:var(--accent);color:#04121e;border-color:var(--accent)}
+
+  /* Tabs */
+  .tabs{display:flex;gap:4px;max-width:1360px;margin:0 auto;padding:0 22px;flex-wrap:wrap}
+  .tab{font-family:'Space Grotesk';font-weight:500;font-size:14px;color:var(--muted);
+    padding:12px 18px;cursor:pointer;border-bottom:2px solid transparent;transition:.15s}
+  .tab:hover{color:var(--text)}
+  .tab.on{color:var(--accent);border-bottom-color:var(--accent)}
+  .tab .badge{display:inline-block;margin-left:7px;font-size:11px;font-weight:600;
+    background:var(--alarm);color:#fff;border-radius:999px;padding:1px 7px}
+
+  .view{animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .threat{margin:20px 0;border-radius:14px;padding:20px 22px;border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;
+    background:linear-gradient(120deg,var(--panel),var(--panel2))}
+  .threat.clear{border-color:rgba(70,192,138,.35)}
+  .threat.breach{border-color:var(--alarm);background:linear-gradient(120deg,#1e0d12,#2a0e15)}
+  .threat .state{display:flex;align-items:center;gap:16px}
+  .beacon{width:44px;height:44px;border-radius:50%;flex:none;position:relative}
+  .beacon.clear{background:radial-gradient(circle,var(--ok),#12433180)}
+  .beacon.breach{background:radial-gradient(circle,var(--alarm),#3a0e14)}
+  .beacon.breach::after{content:"";position:absolute;inset:-6px;border-radius:50%;
+    border:2px solid var(--alarm);animation:pulse 1.4s ease-out infinite}
+  @keyframes pulse{0%{transform:scale(.8);opacity:.9}100%{transform:scale(1.7);opacity:0}}
+  .threat .label{font-family:'Space Grotesk';font-weight:700;font-size:21px}
+  .threat.breach .label{color:var(--alarm)}
+  .threat .desc{color:var(--muted);font-size:13px;margin-top:3px;max-width:54ch}
+  @media (prefers-reduced-motion:reduce){.beacon.breach::after{animation:none}}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:15px 17px;
+    transition:transform .15s,border-color .15s}
+  .stat:hover{transform:translateY(-2px);border-color:var(--accent)}
+  .stat .n{font-family:'Space Grotesk';font-weight:700;font-size:29px;line-height:1}
+  .stat .k{color:var(--muted);font-size:12.5px;margin-top:7px}
+  .stat.alarm .n{color:var(--alarm)}.stat.warn .n{color:var(--warn)}.stat.ok .n{color:var(--ok)}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  .grid3{display:grid;grid-template-columns:1.5fr 1fr;gap:18px;margin-top:18px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .panel h2{font-family:'Space Grotesk';font-weight:600;font-size:15px;
+    padding:14px 18px;border-bottom:1px solid var(--line);display:flex;
+    align-items:center;justify-content:space-between}
+  .panel h2 .count{color:var(--muted);font-size:12px;font-weight:500}
+  .body{padding:8px 0}
+  .empty{color:var(--muted);font-size:13px;padding:22px 18px;line-height:1.6}
+
+  .row{padding:12px 18px;border-bottom:1px solid rgba(34,48,73,.5);display:flex;gap:12px;align-items:flex-start}
+  .row:last-child{border-bottom:none}
+  .row .sev{width:3px;align-self:stretch;border-radius:3px;flex:none}
+  .sev.breach{background:var(--alarm)}.sev.susp{background:var(--warn)}
+  .row .main{flex:1;min-width:0}
+  .row .top{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .tag{font-size:11px;font-weight:600;font-family:'Space Grotesk';padding:2px 8px;border-radius:5px}
+  .tag.breach{background:rgba(255,67,86,.15);color:var(--alarm)}
+  .tag.susp{background:rgba(227,169,74,.15);color:var(--warn)}
+  .tag.high{background:rgba(255,67,86,.13);color:#ff8593}
+  .tag.medium{background:rgba(227,169,74,.13);color:var(--warn)}
+  .tag.low{background:rgba(82,168,224,.13);color:var(--accent)}
+  .row .res{font-weight:600;font-size:13.5px}
+  .row .meta{color:var(--muted);font-size:12px;margin-top:3px;display:flex;gap:14px;flex-wrap:wrap}
+  .row .meta .mono{color:#a9b7cd}
+
+  /* Charts */
+  .chart{padding:18px}
+  .bar-row{display:flex;align-items:center;gap:12px;margin-bottom:11px}
+  .bar-row .lbl{width:120px;font-size:12.5px;color:var(--muted);text-align:right;flex:none}
+  .bar-track{flex:1;height:22px;background:var(--bg2);border-radius:6px;overflow:hidden}
+  .bar-fill{height:100%;border-radius:6px;display:flex;align-items:center;justify-content:flex-end;
+    padding-right:8px;font-size:11px;font-weight:600;color:#04121e;transition:width .6s ease}
+  .donut-wrap{display:flex;align-items:center;gap:24px;padding:8px 4px}
+  .legend{display:flex;flex-direction:column;gap:8px}
+  .legend div{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+  .legend .sw{width:11px;height:11px;border-radius:3px}
+  .timeline{padding:6px 18px 14px}
+  .tl-item{display:flex;gap:12px;padding:9px 0;position:relative}
+  .tl-item::before{content:"";position:absolute;left:5px;top:20px;bottom:-9px;width:2px;background:var(--line)}
+  .tl-item:last-child::before{display:none}
+  .tl-dot{width:12px;height:12px;border-radius:50%;flex:none;margin-top:4px;z-index:1}
+  .tl-dot.breach{background:var(--alarm)}.tl-dot.susp{background:var(--warn)}
+  .tl-body{font-size:13px}.tl-body .t{color:var(--muted);font-size:11px}
+
+  .tech span{display:inline-block;font-size:12px;border:1px solid var(--line);border-radius:6px;
+    padding:5px 9px;color:#b9c6da;margin:0 6px 6px 0}
+  .tech b{color:var(--accent)}
+  .intel-tta{display:flex;align-items:baseline;gap:10px;padding:16px 18px}
+  .intel-tta .v{font-family:'Space Grotesk';font-weight:700;font-size:30px;color:var(--accent)}
+  .intel-tta .k{color:var(--muted);font-size:13px}
+
+  .rem{padding:13px 18px;border-bottom:1px solid rgba(34,48,73,.5);
+    display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .rem:last-child{border-bottom:none}
+  .rem .fix{color:var(--muted);font-size:12px;margin-top:3px}
+  .status-badge{font-size:11px;font-weight:600;font-family:'Space Grotesk';padding:3px 9px;border-radius:5px}
+  .status-badge.pending{background:rgba(227,169,74,.15);color:var(--warn)}
+  .status-badge.approved{background:rgba(82,168,224,.15);color:var(--accent)}
+  .status-badge.applied{background:rgba(70,192,138,.15);color:var(--ok)}
+  .status-badge.failed{background:rgba(255,67,86,.15);color:var(--alarm)}
+  button.approve{background:transparent;border:1px solid var(--ok);color:var(--ok);
+    border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Space Grotesk'}
+  button.approve:hover{background:rgba(70,192,138,.12)}
+
+  /* Chat */
+  .chat{display:flex;flex-direction:column;height:560px}
+  .chat-log{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:12px}
+  .msg{max-width:78%;padding:11px 14px;border-radius:12px;font-size:13.5px;line-height:1.5;white-space:pre-wrap}
+  .msg.user{align-self:flex-end;background:var(--accent);color:#04121e;border-bottom-right-radius:4px}
+  .msg.bot{align-self:flex-start;background:var(--panel2);border:1px solid var(--line);border-bottom-left-radius:4px}
+  .msg.sys{align-self:center;color:var(--muted);font-size:12px;font-style:italic;background:none}
+  .msg .src{margin-top:8px;font-size:11px;color:var(--muted);border-top:1px solid var(--line);padding-top:6px}
+  .confirm-box{align-self:flex-start;background:rgba(227,169,74,.1);border:1px solid var(--warn);
+    border-radius:12px;padding:12px 14px;font-size:13px}
+  .confirm-box .btns{display:flex;gap:8px;margin-top:10px}
+  .confirm-box button{font-family:'Space Grotesk';font-weight:600;font-size:12px;border-radius:7px;
+    padding:6px 14px;cursor:pointer;border:1px solid}
+  .btn-yes{background:var(--ok);color:#04121e;border-color:var(--ok)}
+  .btn-no{background:transparent;color:var(--muted);border-color:var(--line)}
+  .chat-in{display:flex;gap:10px;padding:14px 18px;border-top:1px solid var(--line)}
+  .chat-in input{flex:1;background:var(--bg2);border:1px solid var(--line);border-radius:9px;
+    padding:11px 14px;color:var(--text);font-size:13.5px;font-family:'Inter'}
+  .chat-in input:focus{outline:none;border-color:var(--accent)}
+  .suggest{display:flex;gap:8px;flex-wrap:wrap;padding:0 18px 12px}
+  .suggest button{font-size:12px;color:var(--muted);background:var(--bg2);border:1px solid var(--line);
+    border-radius:999px;padding:6px 12px;cursor:pointer}
+  .suggest button:hover{border-color:var(--accent);color:var(--text)}
+  .typing{display:inline-flex;gap:4px}
+  .typing i{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:blink 1.2s infinite}
+  .typing i:nth-child(2){animation-delay:.2s}.typing i:nth-child(3){animation-delay:.4s}
+  @keyframes blink{0%,60%,100%{opacity:.3}30%{opacity:1}}
+
+  footer{color:var(--muted);font-size:12px;text-align:center;margin-top:30px;line-height:1.7}
+  @media (max-width:900px){.grid2,.grid3{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useCallback, useRef } = React;
+// Same-origin when served at http://localhost:8000/dashboard. If you open the
+// file directly (file://), fall back to the local API server.
+const API = location.protocol === "file:" ? "http://localhost:8000" : "";
+const POLL_MS = 8000;
+
+async function jget(p){ const r=await fetch(API+p); if(!r.ok) throw new Error(r.status); return r.json(); }
+async function jpost(p,b){ const r=await fetch(API+p,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(b||{})}); if(!r.ok) throw new Error(r.status); return r.json(); }
+
+const RISK_COLORS = {HIGH:"#ff4356", MEDIUM:"#e3a94a", LOW:"#52a8e0"};
+const BAND_COLORS = {CLEAR:"#46c08a", LOW:"#46c08a", MEDIUM:"#e3a94a", HIGH:"#ff4356", CRITICAL:"#ff4356"};
+
+function Gauge({score,color}){
+  const pct = Math.max(0,Math.min(100,score||0));
+  const angle = pct/100*360;
+  return (
+    <div style={{width:132,height:132,borderRadius:"50%",flex:"none",
+      background:`conic-gradient(${color} ${angle}deg, var(--bg2) ${angle}deg)`}}>
+      <div style={{position:"absolute"}}></div>
+      <div style={{width:132,height:132,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center"}}>
+        <div style={{width:104,height:104,borderRadius:"50%",background:"var(--panel)",
+          display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column"}}>
+          <div style={{fontFamily:"Space Grotesk",fontWeight:700,fontSize:30,color,lineHeight:1}}>{pct}</div>
+          <div style={{fontSize:10,color:"var(--muted)",marginTop:2}}>/ 100</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ExposureScorePanel({score}){
+  const s = score || {score:0, band:"CLEAR", by_service:{}, delta:null};
+  const color = BAND_COLORS[s.band] || "var(--accent)";
+  const svcMax = Math.max(1,...Object.values(s.by_service||{}),1);
+  let trend = null;
+  if (s.delta!==null && s.delta!==undefined){
+    trend = s.delta>0 ? `▲ +${s.delta} since last scan` : s.delta<0 ? `▼ ${s.delta} since last scan` : "no change since last scan";
+  }
+  return (
+    <div className="panel" style={{marginTop:20}}>
+      <h2>Exposure Score {trend && <span className="count">{trend}</span>}</h2>
+      <div style={{display:"flex",alignItems:"center",gap:26,padding:"20px 22px",flexWrap:"wrap"}}>
+        <div style={{position:"relative"}}><Gauge score={s.score} color={color}/></div>
+        <div style={{flex:1,minWidth:220}}>
+          <div style={{fontFamily:"Space Grotesk",fontWeight:700,fontSize:19,color}}>{s.band}</div>
+          <div style={{color:"var(--muted)",fontSize:13,marginTop:4,maxWidth:"48ch"}}>
+            Composite risk across the real attack surface (decoys excluded) — weighted by finding severity, capped at 100.
+          </div>
+          {Object.keys(s.by_service||{}).length>0 && (
+            <div style={{marginTop:16}}>
+              {Object.entries(s.by_service).map(([svc,w])=>(
+                <Bar key={svc} label={svc} value={w} max={svcMax} color="#7c6cf0"/>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Bar({label,value,max,color}){
+  const pct = max>0 ? Math.max(6,(value/max)*100) : 0;
+  return (
+    <div className="bar-row">
+      <div className="lbl">{label}</div>
+      <div className="bar-track"><div className="bar-fill" style={{width:pct+"%",background:color}}>{value}</div></div>
+    </div>
+  );
+}
+
+function Donut({segments}){
+  const total = segments.reduce((s,x)=>s+x.value,0)||1;
+  let acc=0;
+  const grad = segments.map(s=>{const a=acc/total*360;acc+=s.value;const b=acc/total*360;return `${s.color} ${a}deg ${b}deg`;}).join(",");
+  return (
+    <div className="donut-wrap">
+      <div style={{width:120,height:120,borderRadius:"50%",background:total>0?`conic-gradient(${grad})`:"var(--bg2)",
+        position:"relative",flex:"none"}}>
+        <div style={{position:"absolute",inset:16,borderRadius:"50%",background:"var(--panel)",
+          display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column"}}>
+          <div style={{fontFamily:"Space Grotesk",fontWeight:700,fontSize:22}}>{total}</div>
+          <div style={{fontSize:10,color:"var(--muted)"}}>events</div>
+        </div>
+      </div>
+      <div className="legend">
+        {segments.map((s,i)=>(<div key={i}><span className="sw" style={{background:s.color}}></span>{s.label}: {s.value}</div>))}
+      </div>
+    </div>
+  );
+}
+
+function Chat({endpoint, mode, suggestions}){
+  const [log,setLog]=useState([]);
+  const [input,setInput]=useState("");
+  const [busy,setBusy]=useState(false);
+  const [pending,setPending]=useState(null);
+  const [session] = useState(()=>"s"+Math.random().toString(36).slice(2,8));
+  const logRef=useRef();
+  useEffect(()=>{ if(logRef.current) logRef.current.scrollTop=logRef.current.scrollHeight; },[log,busy]);
+
+  const push=(role,text,extra)=>setLog(l=>[...l,{role,text,...extra}]);
+
+  const ask = async(text, confirm)=>{
+    if(!text && confirm===undefined) return;
+    if(text) push("user",text);
+    setBusy(true);
+    try{
+      if(mode==="rag"){
+        const r=await jpost(endpoint,{question:text});
+        push("bot", r.answer, {sources:r.sources?r.sources.length:0, ragmode:r.mode});
+      }else{
+        const r=await jpost(endpoint,{message:text||"", session, confirm});
+        if(r.pending){ setPending(r.pending); }
+        else { setPending(null); push("bot", r.reply||"(no response)"); }
+      }
+    }catch(e){ push("bot","[error contacting the assistant]"); }
+    setBusy(false);
+  };
+
+  const send=()=>{ const t=input.trim(); if(!t) return; setInput(""); ask(t); };
+  const confirmYes=()=>{ setPending(null); push("sys","action approved"); ask("", true); };
+  const confirmNo=()=>{ setPending(null); push("sys","action cancelled"); ask("", false); };
+
+  return (
+    <div className="chat">
+      <div className="chat-log" ref={logRef}>
+        {log.length===0 && <div className="msg sys">{mode==="rag"?"Ask about attacks, exposures, decoys, or intelligence.":"Ask me to create secure AWS resources — I'll confirm before acting."}</div>}
+        {log.map((m,i)=>(
+          m.role==="sys"
+          ? <div key={i} className="msg sys">{m.text}</div>
+          : <div key={i} className={"msg "+(m.role==="user"?"user":"bot")}>
+              {m.text}
+              {m.sources!==undefined && m.sources>0 && <div className="src">grounded in {m.sources} record(s) · {m.ragmode}</div>}
+            </div>
+        ))}
+        {pending && (
+          <div className="confirm-box">
+            ⚠ {pending}
+            <div className="btns">
+              <button className="btn-yes" onClick={confirmYes}>Confirm</button>
+              <button className="btn-no" onClick={confirmNo}>Cancel</button>
+            </div>
+          </div>
+        )}
+        {busy && <div className="msg bot"><span className="typing"><i></i><i></i><i></i></span></div>}
+      </div>
+      {log.length===0 && <div className="suggest">{suggestions.map((s,i)=>(<button key={i} onClick={()=>ask(s)}>{s}</button>))}</div>}
+      <div className="chat-in">
+        <input value={input} placeholder="Type a message…" onChange={e=>setInput(e.target.value)}
+          onKeyDown={e=>e.key==="Enter"&&send()} disabled={busy}/>
+        <button className="act primary" onClick={send} disabled={busy}>Send</button>
+      </div>
+    </div>
+  );
+}
+
+function App(){
+  const [tab,setTab]=useState("overview");
+  const [up,setUp]=useState(true);
+  const [status,setStatus]=useState(null);
+  const [surface,setSurface]=useState({findings:[]});
+  const [attacks,setAttacks]=useState({captures:[],confirmed_breach:false});
+  const [decoys,setDecoys]=useState({decoys:[]});
+  const [intel,setIntel]=useState(null);
+  const [remeds,setRemeds]=useState({recommendations:[]});
+  const [score,setScore]=useState(null);
+  const [busy,setBusy]=useState(false);
+
+  const load=useCallback(async()=>{
+    try{
+      const [st,sf,at,dc,rm,sc]=await Promise.all([
+        jget("/api/status"),jget("/api/surface"),jget("/api/attacks"),jget("/api/decoys"),jget("/api/remediations"),jget("/api/score")]);
+      setStatus(st);setSurface(sf);setAttacks(at);setDecoys(dc);setRemeds(rm);setScore(sc);
+      try{ setIntel(await jget("/api/intel")); }catch(e){}
+      setUp(true);
+    }catch(e){ setUp(false); }
+  },[]);
+  useEffect(()=>{ load(); const t=setInterval(load,POLL_MS); return ()=>clearInterval(t); },[load]);
+
+  const dedupe=(caps)=>{const s=new Set(),o=[];for(const c of caps){const k=[c.type,c.decoy,c.access_key_id,c.event_name,c.time].join("|");if(!s.has(k)){s.add(k);o.push(c);}}return o;};
+  const caps=dedupe(attacks.captures||[]);
+  const breach=attacks.confirmed_breach;
+  const pending=(remeds.recommendations||[]).filter(r=>r.status==="pending").length;
+  const breaches=caps.filter(c=>c.severity==="CONFIRMED_BREACH").length;
+
+  const doScan=async()=>{ setBusy(true); try{ await jpost("/api/scan"); await load(); }catch(e){} setBusy(false); };
+  const approve=async(id)=>{ try{ await jpost(`/api/remediations/${id}/approve`); await load(); }catch(e){} };
+  const applyFixes=async()=>{ setBusy(true); try{ await jpost("/api/remediations/apply"); await load(); }catch(e){} setBusy(false); };
+
+  // chart data
+  const riskCounts=(surface.findings||[]).reduce((a,f)=>{a[f.risk]=(a[f.risk]||0)+1;return a;},{});
+  const sevSegs=[
+    {label:"Confirmed breach",value:breaches,color:"#ff4356"},
+    {label:"Suspicious",value:caps.length-breaches,color:"#e3a94a"},
+  ];
+  const techCounts=(intel&&intel.techniques||[]).reduce((a,t)=>{a[t.tactic]=(a[t.tactic]||0)+1;return a;},{});
+  const techMax=Math.max(1,...Object.values(techCounts));
+
+  const TABS=[
+    {id:"overview",label:"Overview"},
+    {id:"attacks",label:"Attacks",badge:breaches||null},
+    {id:"intel",label:"Intelligence"},
+    {id:"remediation",label:"Remediation",badge:pending||null},
+    {id:"soc",label:"SOC Chat"},
+    {id:"assistant",label:"Cloud Assistant"},
+  ];
+
+  return (
+    <div>
+      <header>
+        <div className="head-in">
+          <div className="brand"><h1>VEIL<span>GUARD</span></h1><span className="sub">SOC Console</span></div>
+          <div className="controls">
+            <div className="api-dot"><span className={"dot "+(up?"up":"down")}></span>{up?"API connected":"API offline"}</div>
+            <button className="act" onClick={load}>Refresh</button>
+            <button className="act primary" title="Re-scans AWS and syncs the remediation queue to match" onClick={doScan} disabled={busy}>{busy?"Working…":"Run scan"}</button>
+          </div>
+        </div>
+        <div className="tabs">
+          {TABS.map(t=>(
+            <div key={t.id} className={"tab "+(tab===t.id?"on":"")} onClick={()=>setTab(t.id)}>
+              {t.label}{t.badge?<span className="badge">{t.badge}</span>:null}
+            </div>
+          ))}
+        </div>
+      </header>
+
+      <div className="wrap">
+
+        {tab==="overview" && (
+          <div className="view">
+            <div className={"threat "+(breach?"breach":"clear")}>
+              <div className="state">
+                <div className={"beacon "+(breach?"breach":"clear")}></div>
+                <div>
+                  <div className="label">{breach?"CONFIRMED BREACH":"All clear — monitoring"}</div>
+                  <div className="desc">{breach?"A planted honeytoken was used. An attacker reached a decoy and tried the credentials.":"No honeytoken triggered. The deception layer is armed and watching."}</div>
+                </div>
+              </div>
+              {status && <div className="api-dot">Region&nbsp;<b className="mono" style={{color:"var(--accent)"}}>{status.region}</b></div>}
+            </div>
+
+            <ExposureScorePanel score={score}/>
+
+            <div className="stats">
+              <div className="stat"><div className="n">{status?status.exposed_resources:"—"}</div><div className="k">Real exposures (decoys excluded)</div></div>
+              <div className="stat ok"><div className="n">{status?status.decoys_active:"—"}</div><div className="k">Decoys armed</div></div>
+              <div className={"stat "+(breach?"alarm":"")}><div className="n">{status?status.captures:"—"}</div><div className="k">Attacker events captured</div></div>
+              <div className={"stat "+(pending?"warn":"")}><div className="n">{status?status.pending_remediations:"—"}</div><div className="k">Fixes awaiting approval</div></div>
+            </div>
+
+            <div className="grid2">
+              <div className="panel">
+                <h2>Exposure risk breakdown</h2>
+                <div className="chart">
+                  {(surface.findings||[]).length===0 && <div className="empty" style={{padding:"8px 0"}}>No exposures — clean surface.</div>}
+                  {["HIGH","MEDIUM","LOW"].map(r=>riskCounts[r]?(
+                    <Bar key={r} label={r} value={riskCounts[r]} max={Math.max(1,...Object.values(riskCounts))} color={RISK_COLORS[r]}/>
+                  ):null)}
+                </div>
+              </div>
+              <div className="panel">
+                <h2>Attack severity</h2>
+                <div className="chart">
+                  {caps.length===0 ? <div className="empty" style={{padding:"8px 0"}}>No attacker activity captured yet.</div>
+                    : <Donut segments={sevSegs}/>}
+                </div>
+              </div>
+            </div>
+
+            <div className="grid3">
+              <div className="panel">
+                <h2>Recent attack feed <span className="count">{caps.length} events</span></h2>
+                <div className="body">
+                  {caps.length===0 && <div className="empty">Run the attacker simulation, then the capture engine.</div>}
+                  {caps.slice(0,5).map((c,i)=>{const b=c.severity==="CONFIRMED_BREACH";return(
+                    <div className="row" key={i}><div className={"sev "+(b?"breach":"susp")}></div>
+                      <div className="main"><div className="top">
+                        <span className={"tag "+(b?"breach":"susp")}>{b?"BREACH":"SUSPICIOUS"}</span>
+                        <span className="res">{c.event_name}</span></div>
+                        <div className="meta"><span>{c.decoy}</span>{c.source_ip&&<span className="mono">{c.source_ip}</span>}</div>
+                      </div></div>);})}
+                </div>
+              </div>
+              <div className="panel">
+                <h2>Decoys armed <span className="count">{(decoys.decoys||[]).length}</span></h2>
+                <div className="body">
+                  {(decoys.decoys||[]).length===0 && <div className="empty">No decoys deployed.</div>}
+                  {(decoys.decoys||[]).map((d,i)=>(<div className="row" key={i}><div className="main">
+                    <div className="res">{d.bucket}</div>
+                    <div className="meta">{d.token_id&&<span>token <span className="mono">{d.token_id}</span></span>}</div>
+                  </div></div>))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {tab==="attacks" && (
+          <div className="view">
+            <div className="panel" style={{marginTop:20}}>
+              <h2>Full attack feed <span className="count">{caps.length} events · {breaches} confirmed breach</span></h2>
+              <div className="body">
+                {caps.length===0 && <div className="empty">No attacker activity captured yet. Run the attacker simulation, then the capture engine.</div>}
+                {caps.map((c,i)=>{const b=c.severity==="CONFIRMED_BREACH";return(
+                  <div className="row" key={i}><div className={"sev "+(b?"breach":"susp")}></div>
+                    <div className="main"><div className="top">
+                      <span className={"tag "+(b?"breach":"susp")}>{b?"CONFIRMED BREACH":"SUSPICIOUS"}</span>
+                      <span className="res">{c.event_name}</span></div>
+                      <div className="meta"><span>decoy: {c.decoy}</span>{c.source_ip&&<span>from <span className="mono">{c.source_ip}</span></span>}
+                        {c.access_key_id&&<span className="mono">{c.access_key_id}</span>}{c.time&&<span className="mono">{c.time}</span>}</div>
+                    </div></div>);})}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {tab==="intel" && (
+          <div className="view">
+            <div className="grid2" style={{marginTop:20}}>
+              <div className="panel">
+                <h2>Time to attack</h2>
+                {intel&&(intel.timeline||[]).length>0
+                  ? <div className="intel-tta"><span className="v">{intel.time_to_attack_human}</span><span className="k">from decoy deployment to first attacker interaction</span></div>
+                  : <div className="empty">Run the intelligence engine after an attack.</div>}
+                {intel&&(intel.techniques||[]).length>0 && <div className="chart" style={{paddingTop:0}}>
+                  {Object.entries(techCounts).map(([t,n])=>(<Bar key={t} label={t} value={n} max={techMax} color="#7c6cf0"/>))}
+                </div>}
+              </div>
+              <div className="panel">
+                <h2>Techniques (MITRE ATT&amp;CK)</h2>
+                <div className="chart">
+                  {(!intel||(intel.techniques||[]).length===0)&&<div className="empty" style={{padding:"6px 0"}}>No techniques mapped yet.</div>}
+                  <div className="tech">{(intel&&intel.techniques||[]).map((t,i)=>(<span key={i}><b>{t.action}</b> · {t.tactic}</span>))}</div>
+                </div>
+              </div>
+            </div>
+            <div className="panel" style={{marginTop:18}}>
+              <h2>Attack timeline</h2>
+              <div className="timeline">
+                {(!intel||(intel.timeline||[]).length===0)&&<div className="empty" style={{padding:"6px 0"}}>No timeline yet.</div>}
+                {(intel&&intel.timeline||[]).map((e,i)=>{const b=e.severity==="CONFIRMED_BREACH";return(
+                  <div className="tl-item" key={i}><div className={"tl-dot "+(b?"breach":"susp")}></div>
+                    <div className="tl-body"><div>{e.event_name} on <b>{e.decoy}</b></div>
+                    <div className="t mono">{e.time} · {e.source_ip}</div></div></div>);})}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {tab==="remediation" && (
+          <div className="view">
+            <div className="panel" style={{marginTop:20}}>
+              <h2>Remediation queue <span className="count"><button className="act" style={{padding:"5px 11px"}} onClick={applyFixes} disabled={busy}>Apply approved</button></span></h2>
+              <div className="body">
+                {(remeds.recommendations||[]).length===0 && <div className="empty">No remediable exposures. Your real surface is clean. Decoys are excluded — VEILGUARD never fixes its own traps.</div>}
+                {(remeds.recommendations||[]).map((r)=>(
+                  <div className="rem" key={r.id}>
+                    <div style={{flex:1}}>
+                      <div><span className={"tag "+(r.finding.risk||"low").toLowerCase()}>{r.finding.risk}</span>&nbsp; {r.finding.resource}</div>
+                      <div className="fix">{r.recommendation}</div>
+                    </div>
+                    <div style={{display:"flex",alignItems:"center",gap:10}}>
+                      <span className={"status-badge "+r.status}>{r.status}</span>
+                      {r.status==="pending"&&r.auto_fixable&&<button className="approve" onClick={()=>approve(r.id)}>Approve</button>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {tab==="soc" && (
+          <div className="view">
+            <div className="panel" style={{marginTop:20}}>
+              <h2>SOC Analyst Chat <span className="count">grounded in your data (RAG)</span></h2>
+              <Chat endpoint="/api/chat" mode="rag" suggestions={["which IP attacked us?","what exposures do I need to fix?","how fast was the attack detected?","what traps are deployed?"]}/>
+            </div>
+          </div>
+        )}
+
+        {tab==="assistant" && (
+          <div className="view">
+            <div className="panel" style={{marginTop:20}}>
+              <h2>Cloud Assistant <span className="count">secure-by-default provisioning · confirms before acting</span></h2>
+              <Chat endpoint="/api/agent" mode="agent" suggestions={["list my buckets","create a bucket for customer files","what can you help me with?"]}/>
+            </div>
+          </div>
+        )}
+
+        <footer>VEILGUARD — Cloud Attack Surface Intelligence &amp; Deception Platform · auto-refresh {POLL_MS/1000}s</footer>
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>

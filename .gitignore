@@ -1,0 +1,30 @@
+# ---- Secrets: NEVER commit these ----
+.env
+*.pem
+*.key
+aws_credentials
+credentials
+
+# ---- Terraform state (can contain sensitive values) ----
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# ---- Python ----
+__pycache__/
+*.pyc
+.venv/
+venv/
+myenv/
+
+# ---- Local runtime data (contains real key IDs, IPs, account-specific info) ----
+data/*
+!data/.gitkeep
+
+# ---- Node / React (Part 7) ----
+node_modules/
+dashboard/build/
+
+# ---- OS ----
+.DS_Store
