@@ -11,16 +11,16 @@ provider "aws" {
   region = "ap-south-1"
 }
 
-# ============ Decoy 1: cloudsnare-prod-db-backup-693fb6af ============
+# ============ Decoy 1: cloudsnare-prod-db-backup-65443114 ============
 
 # --- The public bucket (the visible bait) ---
 resource "aws_s3_bucket" "decoy_1" {
-  bucket        = "cloudsnare-prod-db-backup-693fb6af"
+  bucket        = "cloudsnare-prod-db-backup-65443114"
   force_destroy = true
   tags = {
-    Name      = "cloudsnare-prod-db-backup-693fb6af"
+    Name      = "cloudsnare-prod-db-backup-65443114"
     cloudsnare = "decoy"
-    token_id  = "4cd34d0299ad"
+    token_id  = "2e3b7de822de"
   }
 }
 
@@ -49,11 +49,11 @@ resource "aws_s3_bucket_policy" "decoy_1" {
 
 # --- The honeytoken: a REAL but powerless IAM user + key ---
 resource "aws_iam_user" "decoy_1" {
-  name          = "cloudsnare-prod-db-backup-693fb6af"
+  name          = "cloudsnare-prod-db-backup-65443114"
   force_destroy = true
   tags = {
     cloudsnare = "honeytoken"
-    token_id  = "4cd34d0299ad"
+    token_id  = "2e3b7de822de"
   }
 }
 
@@ -78,30 +78,30 @@ resource "aws_s3_object" "decoy_1_token" {
     # Production credentials - DO NOT SHARE
     aws_access_key_id = ${aws_iam_access_key.decoy_1.id}
     aws_secret_access_key = ${aws_iam_access_key.decoy_1.secret}
-    # ref: 4cd34d0299ad
+    # ref: 2e3b7de822de
   EOT
 }
 
 # --- Output the real key id so CLOUDSNARE can watch CloudTrail for it ---
 output "honeytoken_1" {
   value = {
-    bucket        = "cloudsnare-prod-db-backup-693fb6af"
-    token_id      = "4cd34d0299ad"
+    bucket        = "cloudsnare-prod-db-backup-65443114"
+    token_id      = "2e3b7de822de"
     access_key_id = aws_iam_access_key.decoy_1.id
   }
 }
 
 
-# ============ Decoy 2: cloudsnare-admin-credentials-6ee9fbc4 ============
+# ============ Decoy 2: cloudsnare-admin-credentials-cb497859 ============
 
 # --- The public bucket (the visible bait) ---
 resource "aws_s3_bucket" "decoy_2" {
-  bucket        = "cloudsnare-admin-credentials-6ee9fbc4"
+  bucket        = "cloudsnare-admin-credentials-cb497859"
   force_destroy = true
   tags = {
-    Name      = "cloudsnare-admin-credentials-6ee9fbc4"
+    Name      = "cloudsnare-admin-credentials-cb497859"
     cloudsnare = "decoy"
-    token_id  = "5450f015507b"
+    token_id  = "28bcebe15d71"
   }
 }
 
@@ -130,11 +130,11 @@ resource "aws_s3_bucket_policy" "decoy_2" {
 
 # --- The honeytoken: a REAL but powerless IAM user + key ---
 resource "aws_iam_user" "decoy_2" {
-  name          = "cloudsnare-admin-credentials-6ee9fbc4"
+  name          = "cloudsnare-admin-credentials-cb497859"
   force_destroy = true
   tags = {
     cloudsnare = "honeytoken"
-    token_id  = "5450f015507b"
+    token_id  = "28bcebe15d71"
   }
 }
 
@@ -159,30 +159,30 @@ resource "aws_s3_object" "decoy_2_token" {
     # Production credentials - DO NOT SHARE
     aws_access_key_id = ${aws_iam_access_key.decoy_2.id}
     aws_secret_access_key = ${aws_iam_access_key.decoy_2.secret}
-    # ref: 5450f015507b
+    # ref: 28bcebe15d71
   EOT
 }
 
 # --- Output the real key id so CLOUDSNARE can watch CloudTrail for it ---
 output "honeytoken_2" {
   value = {
-    bucket        = "cloudsnare-admin-credentials-6ee9fbc4"
-    token_id      = "5450f015507b"
+    bucket        = "cloudsnare-admin-credentials-cb497859"
+    token_id      = "28bcebe15d71"
     access_key_id = aws_iam_access_key.decoy_2.id
   }
 }
 
 
-# ============ Decoy 3: cloudsnare-internal-api-keys-adcc4434 ============
+# ============ Decoy 3: cloudsnare-internal-api-keys-21a27ce4 ============
 
 # --- The public bucket (the visible bait) ---
 resource "aws_s3_bucket" "decoy_3" {
-  bucket        = "cloudsnare-internal-api-keys-adcc4434"
+  bucket        = "cloudsnare-internal-api-keys-21a27ce4"
   force_destroy = true
   tags = {
-    Name      = "cloudsnare-internal-api-keys-adcc4434"
+    Name      = "cloudsnare-internal-api-keys-21a27ce4"
     cloudsnare = "decoy"
-    token_id  = "3a13fcfb65b0"
+    token_id  = "9eb3adc893bd"
   }
 }
 
@@ -211,11 +211,11 @@ resource "aws_s3_bucket_policy" "decoy_3" {
 
 # --- The honeytoken: a REAL but powerless IAM user + key ---
 resource "aws_iam_user" "decoy_3" {
-  name          = "cloudsnare-internal-api-keys-adcc4434"
+  name          = "cloudsnare-internal-api-keys-21a27ce4"
   force_destroy = true
   tags = {
     cloudsnare = "honeytoken"
-    token_id  = "3a13fcfb65b0"
+    token_id  = "9eb3adc893bd"
   }
 }
 
@@ -240,15 +240,15 @@ resource "aws_s3_object" "decoy_3_token" {
     # Production credentials - DO NOT SHARE
     aws_access_key_id = ${aws_iam_access_key.decoy_3.id}
     aws_secret_access_key = ${aws_iam_access_key.decoy_3.secret}
-    # ref: 3a13fcfb65b0
+    # ref: 9eb3adc893bd
   EOT
 }
 
 # --- Output the real key id so CLOUDSNARE can watch CloudTrail for it ---
 output "honeytoken_3" {
   value = {
-    bucket        = "cloudsnare-internal-api-keys-adcc4434"
-    token_id      = "3a13fcfb65b0"
+    bucket        = "cloudsnare-internal-api-keys-21a27ce4"
+    token_id      = "9eb3adc893bd"
     access_key_id = aws_iam_access_key.decoy_3.id
   }
 }
