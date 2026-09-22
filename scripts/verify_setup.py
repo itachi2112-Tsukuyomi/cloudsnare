@@ -1,10 +1,10 @@
 """
-VEILGUARD — Setup verification.
+CLOUDSNARE — Setup verification.
 
 Run this FIRST, before anything else. It confirms:
   1. Your AWS credentials are configured and working.
   2. Which AWS account you're pointed at (so you don't
-     accidentally run VEILGUARD against the wrong account).
+     accidentally run CLOUDSNARE against the wrong account).
   3. Your region is set.
 
 If this passes, your foundation (Part 1) is done.
@@ -24,7 +24,7 @@ from config import AWS_REGION
 
 
 def main():
-    print("=== VEILGUARD setup check ===\n")
+    print("=== CLOUDSNARE setup check ===\n")
     try:
         sts = boto3.client("sts", region_name=AWS_REGION)
         identity = sts.get_caller_identity()
@@ -40,7 +40,7 @@ def main():
     print(f"[+] Account ID : {identity['Account']}")
     print(f"[+] Identity   : {identity['Arn']}")
     print(f"[+] Region     : {AWS_REGION}")
-    print("\n[!] Confirm the Account ID above is your ISOLATED VEILGUARD account,")
+    print("\n[!] Confirm the Account ID above is your ISOLATED CLOUDSNARE account,")
     print("    NOT a personal or production account.")
     print("\nFoundation looks good. Ready for Part 2 (the Mapper).")
 

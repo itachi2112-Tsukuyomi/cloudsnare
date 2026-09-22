@@ -1,5 +1,5 @@
 """
-VEILGUARD — reset demo state.
+CLOUDSNARE — reset demo state.
 
 Clears captured attacks, intelligence, and remediation state so you can
 run a clean end-to-end demo from scratch. Does NOT touch AWS resources or

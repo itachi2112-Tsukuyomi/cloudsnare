@@ -1,5 +1,5 @@
 """
-VEILGUARD Capture Engine — entry point (the CAPTURE stage).
+CLOUDSNARE Capture Engine — entry point (the CAPTURE stage).
 
 Reads CloudTrail, correlates against your decoys, and reports any traps
 that were touched. A honeytoken hit is a confirmed breach.
@@ -48,7 +48,7 @@ def _print_captures(captures):
 
 
 def _self_identifiers(region):
-    """Learn VEILGUARD operator's own identity so we can filter self-noise."""
+    """Learn CLOUDSNARE operator's own identity so we can filter self-noise."""
     try:
         import boto3
         ident = boto3.client("sts", region_name=region).get_caller_identity()
@@ -86,7 +86,7 @@ def scan_once():
 
 
 def main():
-    ap = argparse.ArgumentParser(description="VEILGUARD Capture Engine")
+    ap = argparse.ArgumentParser(description="CLOUDSNARE Capture Engine")
     ap.add_argument("--loop", action="store_true",
                     help="keep polling CloudTrail continuously")
     args = ap.parse_args()

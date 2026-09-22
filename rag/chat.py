@@ -1,8 +1,8 @@
 """
-VEILGUARD RAG — chat pipeline.
+CLOUDSNARE RAG — chat pipeline.
 
 Ties retrieval and generation together:
-  1. Build the document corpus from VEILGUARD's data.
+  1. Build the document corpus from CLOUDSNARE's data.
   2. Retrieve the top-k documents relevant to the analyst's question.
   3. Ask the LLM to answer using ONLY that retrieved context (grounded,
      so it can't invent events that didn't happen).
@@ -47,7 +47,7 @@ def _llm_answer(question, hits, model):
     """Answer with the configured LLM, grounded in retrieved context. None on failure."""
     context = "\n".join(f"- {h['text']}" for h in hits)
     prompt = (
-        "You are a SOC analyst assistant for the VEILGUARD cloud deception "
+        "You are a SOC analyst assistant for the CLOUDSNARE cloud deception "
         "platform. Answer the analyst's question using ONLY the context below, "
         "which are real records from the platform. If the context does not "
         "contain the answer, say so plainly — do not invent events.\n\n"

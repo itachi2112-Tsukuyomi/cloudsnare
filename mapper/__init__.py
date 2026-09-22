@@ -1,1 +1,1 @@
-"""VEILGUARD Mapper — the MAP stage of the loop."""
+"""CLOUDSNARE Mapper — the MAP stage of the loop."""

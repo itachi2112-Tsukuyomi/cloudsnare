@@ -1,5 +1,5 @@
 """
-VEILGUARD RAG — retriever (the vector store).
+CLOUDSNARE RAG — retriever (the vector store).
 
 A dependency-free TF-IDF vector index with cosine similarity. This is the
 "retrieval" half of Retrieval-Augmented Generation: given a question, it

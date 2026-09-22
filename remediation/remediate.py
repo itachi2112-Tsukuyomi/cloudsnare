@@ -1,5 +1,5 @@
 """
-VEILGUARD Remediation Engine - entry point (the ACT stage).
+CLOUDSNARE Remediation Engine - entry point (the ACT stage).
 
 Human-in-the-loop remediation:
     detect exposure -> recommend fix -> HUMAN APPROVES -> auto-fix -> report
@@ -78,7 +78,7 @@ def _write_report(state):
     recs = state["recommendations"]
     applied = [r for r in recs if r["status"] == "applied"]
     failed = [r for r in recs if r["status"] == "failed"]
-    lines = ["# VEILGUARD Remediation Report\n",
+    lines = ["# CLOUDSNARE Remediation Report\n",
              f"Generated: {datetime.now(timezone.utc).isoformat()}\n",
              f"- Applied: {len(applied)}   Failed: {len(failed)}   "
              f"Total tracked: {len(recs)}\n"]
@@ -97,7 +97,7 @@ def _write_report(state):
 
 
 def main():
-    ap = argparse.ArgumentParser(description="VEILGUARD Remediation Engine")
+    ap = argparse.ArgumentParser(description="CLOUDSNARE Remediation Engine")
     ap.add_argument("--approve", metavar="ID", help="approve one recommendation")
     ap.add_argument("--approve-all", action="store_true",
                     help="approve all auto-fixable recommendations")

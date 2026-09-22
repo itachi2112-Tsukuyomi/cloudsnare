@@ -1,5 +1,5 @@
 """
-VEILGUARD Mapper — scanner.
+CLOUDSNARE Mapper — scanner.
 
 Each function inspects ONE AWS service and returns a list of
 "findings" — resources that are exposed to the internet.

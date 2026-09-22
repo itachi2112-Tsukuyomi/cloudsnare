@@ -1,5 +1,5 @@
 """
-VEILGUARD Mapper — snapshots & change detection.
+CLOUDSNARE Mapper — snapshots & change detection.
 
 A snapshot is one scan frozen in time, saved as JSON. Comparing the
 newest snapshot against the previous one is what turns a one-off audit
@@ -7,7 +7,7 @@ into continuous monitoring: it tells you what just appeared, what
 disappeared, and what changed.
 
 This "diff" is the heart of the MAP stage — a new HIGH-risk exposure
-showing up between two scans is exactly the signal VEILGUARD exists to
+showing up between two scans is exactly the signal CLOUDSNARE exists to
 catch.
 """
 

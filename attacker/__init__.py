@@ -1,1 +1,1 @@
-"""VEILGUARD Attacker Simulation — a controlled adversary for demos."""
+"""CLOUDSNARE Attacker Simulation — a controlled adversary for demos."""

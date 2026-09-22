@@ -1,5 +1,5 @@
 """
-VEILGUARD — Billing safety alarm.
+CLOUDSNARE — Billing safety alarm.
 
 Run this ONCE right after AWS setup. It creates:
   1. An SNS topic that emails you.
@@ -35,15 +35,15 @@ def main():
     sns = boto3.client("sns", region_name="us-east-1")
 
     # 1. SNS topic + email subscription
-    topic_arn = sns.create_topic(Name="veilguard-billing-alerts")["TopicArn"]
+    topic_arn = sns.create_topic(Name="cloudsnare-billing-alerts")["TopicArn"]
     sns.subscribe(TopicArn=topic_arn, Protocol="email", Endpoint=ALERT_EMAIL)
     print(f"[+] SNS topic ready: {topic_arn}")
     print(f"[!] Check {ALERT_EMAIL} and CONFIRM the subscription email.")
 
     # 2. CloudWatch billing alarm
     cw.put_metric_alarm(
-        AlarmName="veilguard-estimated-charges",
-        AlarmDescription="Fires if VEILGUARD-related AWS charges get too high.",
+        AlarmName="cloudsnare-estimated-charges",
+        AlarmDescription="Fires if CLOUDSNARE-related AWS charges get too high.",
         Namespace="AWS/Billing",
         MetricName="EstimatedCharges",
         Dimensions=[{"Name": "Currency", "Value": "USD"}],

@@ -1,16 +1,16 @@
-# IAM setup for VEILGUARD
+# IAM setup for CLOUDSNARE
 
-`veilguard-scanner-policy.json` is a **least-privilege** policy. It grants only
+`cloudsnare-scanner-policy.json` is a **least-privilege** policy. It grants only
 read/describe access for the services the Mapper scans, plus permission to
 create the billing alarm. No write/delete on your real resources.
 
 ## Attach it (AWS Console — easiest)
 
 1. IAM → Policies → **Create policy** → JSON tab.
-2. Paste the contents of `veilguard-scanner-policy.json`.
-3. Name it `VeilguardScannerPolicy` → Create.
-4. IAM → Users → your VEILGUARD user → **Add permissions** → attach
-   `VeilguardScannerPolicy`.
+2. Paste the contents of `cloudsnare-scanner-policy.json`.
+3. Name it `CloudsnareScannerPolicy` → Create.
+4. IAM → Users → your CLOUDSNARE user → **Add permissions** → attach
+   `CloudsnareScannerPolicy`.
 
 ## Why least-privilege matters here
 

@@ -1,5 +1,5 @@
 """
-VEILGUARD Capture — CloudTrail reader.
+CLOUDSNARE Capture — CloudTrail reader.
 
 We use CloudTrail's Event History (the lookup_events API), which is on by
 default in every AWS account, records management events, and costs nothing
@@ -8,7 +8,7 @@ management event — so honeytoken use shows up here without us having to
 configure a trail or pay for data events.
 
 Honest caveat: Event History is not instant. Events typically appear within
-a few minutes (often ~5-15). VEILGUARD polls, so detection lands within that
+a few minutes (often ~5-15). CLOUDSNARE polls, so detection lands within that
 window rather than the same second. For a live demo, run the attacker a few
 minutes before the reveal, or let the watch loop pick it up.
 """

@@ -1,5 +1,5 @@
 """
-VEILGUARD Agent — tool schemas.
+CLOUDSNARE Agent — tool schemas.
 
 These describe each tool to the LLM in the structured format the Anthropic
 API's tool-use feature expects. The model reads these and, instead of free
@@ -63,7 +63,7 @@ TOOL_SCHEMAS = [
 ]
 
 SYSTEM_PROMPT = (
-    "You are the VEILGUARD cloud assistant. You help people — including those "
+    "You are the CLOUDSNARE cloud assistant. You help people — including those "
     "with no cloud experience — provision AWS resources safely through "
     "conversation. You can only act through the provided tools; you never run "
     "arbitrary commands. Everything you create is secure by default (private, "

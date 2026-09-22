@@ -1,8 +1,8 @@
 """
-VEILGUARD Deception Engine — Mirror Decoys name generator.
+CLOUDSNARE Deception Engine — Mirror Decoys name generator.
 
 This is the idea that ties the loop together: decoys are shaped BY the
-map. Instead of generic honeypots that stand out, VEILGUARD reads the
+map. Instead of generic honeypots that stand out, CLOUDSNARE reads the
 naming style of your real resources and generates decoy names that
 blend in — so an attacker can't tell a trap from a genuine asset.
 

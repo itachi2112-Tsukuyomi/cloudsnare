@@ -1,5 +1,5 @@
 """
-VEILGUARD API — the FastAPI backend (Part 8).
+CLOUDSNARE API — the FastAPI backend (Part 8).
 
 This is the single interface the dashboard (Part 9) talks to. It exposes
 every stage of the loop over REST:
@@ -46,7 +46,7 @@ from mapper.scoring import score_findings
 from api import models
 
 app = FastAPI(
-    title="VEILGUARD API",
+    title="CLOUDSNARE API",
     description="Cloud Attack Surface Intelligence & Deception Platform",
     version="1.0.0",
 )
@@ -94,7 +94,7 @@ def _real_findings(snapshot, decoys_state):
     decoy_names = {d["bucket"] for d in decoys_state.get("decoys", [])}
     return [f for f in snapshot.get("findings", [])
             if f.get("resource") not in decoy_names
-            and not str(f.get("resource", "")).startswith("veilguard")]
+            and not str(f.get("resource", "")).startswith("cloudsnare")]
 
 
 # ---- root ------------------------------------------------------------------
@@ -102,7 +102,7 @@ def _real_findings(snapshot, decoys_state):
 @app.get("/")
 def root():
     return {
-        "name": "VEILGUARD API",
+        "name": "CLOUDSNARE API",
         "loop": "MAP -> DECEIVE -> CAPTURE -> LEARN -> ACT",
         "docs": "/docs",
     }
@@ -282,7 +282,7 @@ def apply_remediations():
 @app.post("/api/chat")
 def chat(payload: dict):
     """
-    Ask a plain-English question about VEILGUARD's own data.
+    Ask a plain-English question about CLOUDSNARE's own data.
     Body: {"question": "..."}  ->  {answer, mode, sources}
     """
     question = (payload or {}).get("question", "").strip()

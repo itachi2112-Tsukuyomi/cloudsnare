@@ -1,5 +1,5 @@
 """
-VEILGUARD Agent — CLI chat (the ACT-through-conversation interface).
+CLOUDSNARE Agent — CLI chat (the ACT-through-conversation interface).
 
 Talk to your AWS account in plain English. The assistant can list your
 resources and create secure-by-default S3 buckets and EC2 instances. It asks
@@ -47,7 +47,7 @@ def main():
     model = LLM_MODEL if LLM_PROVIDER == "openrouter" else ANTHROPIC_MODEL
 
     print("=" * 60)
-    print("  VEILGUARD Cloud Assistant")
+    print("  CLOUDSNARE Cloud Assistant")
     print("  Secure-by-default AWS provisioning through chat.")
     print(f"  Provider: {LLM_PROVIDER}  |  Model: {model}")
     print(f"  Region: {AWS_REGION}   |   type 'exit' to quit")

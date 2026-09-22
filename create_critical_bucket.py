@@ -1,16 +1,16 @@
 """
-VEILGUARD — demo helper: create a "critical" exposure.
+CLOUDSNARE — demo helper: create a "critical" exposure.
 
-Creates a genuinely public S3 bucket so VEILGUARD's Mapper flags it as a
+Creates a genuinely public S3 bucket so CLOUDSNARE's Mapper flags it as a
 HIGH-risk (critical) exposure, and the Remediation engine can then fix it.
 This automates the manual steps used when testing, giving you a repeatable
 way to spawn a red flag for a demo.
 
 Safety notes:
-  - The bucket name does NOT start with "veilguard", so remediation treats it
+  - The bucket name does NOT start with "cloudsnare", so remediation treats it
     as a REAL exposure (not a decoy) and will offer to fix it.
   - This makes a bucket publicly readable. That is the whole point (it is the
-    misconfiguration VEILGUARD detects), but only do this in your isolated
+    misconfiguration CLOUDSNARE detects), but only do this in your isolated
     demo account.
 
 Usage (project root, venv active):
@@ -31,7 +31,7 @@ from botocore.exceptions import ClientError
 
 from config import AWS_REGION
 
-# A realistic, tempting name — NOT starting with "veilguard" so it's treated
+# A realistic, tempting name — NOT starting with "cloudsnare" so it's treated
 # as a real exposure by the remediation engine.
 DEFAULT_NAME = "company-financial-records-demo"
 
@@ -113,12 +113,12 @@ def destroy(bucket, region):
 def main():
     ap = argparse.ArgumentParser(description="Create a critical S3 exposure for demos")
     ap.add_argument("--name", default=DEFAULT_NAME,
-                    help="bucket name (must be globally unique; avoid 'veilguard' prefix)")
+                    help="bucket name (must be globally unique; avoid 'cloudsnare' prefix)")
     ap.add_argument("--destroy", action="store_true", help="remove the bucket")
     args = ap.parse_args()
 
-    if args.name.startswith("veilguard"):
-        print("[!] Warning: a name starting with 'veilguard' will be treated as a")
+    if args.name.startswith("cloudsnare"):
+        print("[!] Warning: a name starting with 'cloudsnare' will be treated as a")
         print("    decoy and skipped by remediation. Use a different name.")
 
     if args.destroy:

@@ -1,5 +1,5 @@
 """
-VEILGUARD Capture — correlation engine.
+CLOUDSNARE Capture — correlation engine.
 
 Takes raw CloudTrail events and the decoy state, and produces normalized
 "capture events": clear records of an attacker touching a trap.
@@ -70,7 +70,7 @@ def correlate(events, decoy_state, self_identifiers=None):
     most severe first.
 
     self_identifiers: optional set of ARNs/usernames that represent
-    VEILGUARD's own operator (e.g. the admin user that deploys decoys).
+    CLOUDSNARE's own operator (e.g. the admin user that deploys decoys).
     DECOY_ACCESS events from these are skipped as self-noise — but
     HONEYTOKEN_USE is NEVER skipped (that's always a real breach signal).
     """

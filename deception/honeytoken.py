@@ -1,5 +1,5 @@
 """
-VEILGUARD Deception Engine — honeytoken generator.
+CLOUDSNARE Deception Engine — honeytoken generator.
 
 A honeytoken is a FAKE credential that looks real but grants no access.
 We plant one inside each decoy bucket (in a file like `credentials.txt`).

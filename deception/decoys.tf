@@ -11,16 +11,16 @@ provider "aws" {
   region = "ap-south-1"
 }
 
-# ============ Decoy 1: veilguard-prod-db-backup-8f70aa57 ============
+# ============ Decoy 1: cloudsnare-prod-db-backup-693fb6af ============
 
 # --- The public bucket (the visible bait) ---
 resource "aws_s3_bucket" "decoy_1" {
-  bucket        = "veilguard-prod-db-backup-8f70aa57"
+  bucket        = "cloudsnare-prod-db-backup-693fb6af"
   force_destroy = true
   tags = {
-    Name      = "veilguard-prod-db-backup-8f70aa57"
-    veilguard = "decoy"
-    token_id  = "9545eeb75411"
+    Name      = "cloudsnare-prod-db-backup-693fb6af"
+    cloudsnare = "decoy"
+    token_id  = "4cd34d0299ad"
   }
 }
 
@@ -49,11 +49,11 @@ resource "aws_s3_bucket_policy" "decoy_1" {
 
 # --- The honeytoken: a REAL but powerless IAM user + key ---
 resource "aws_iam_user" "decoy_1" {
-  name          = "veilguard-prod-db-backup-8f70aa57"
+  name          = "cloudsnare-prod-db-backup-693fb6af"
   force_destroy = true
   tags = {
-    veilguard = "honeytoken"
-    token_id  = "9545eeb75411"
+    cloudsnare = "honeytoken"
+    token_id  = "4cd34d0299ad"
   }
 }
 
@@ -78,30 +78,30 @@ resource "aws_s3_object" "decoy_1_token" {
     # Production credentials - DO NOT SHARE
     aws_access_key_id = ${aws_iam_access_key.decoy_1.id}
     aws_secret_access_key = ${aws_iam_access_key.decoy_1.secret}
-    # ref: 9545eeb75411
+    # ref: 4cd34d0299ad
   EOT
 }
 
-# --- Output the real key id so VEILGUARD can watch CloudTrail for it ---
+# --- Output the real key id so CLOUDSNARE can watch CloudTrail for it ---
 output "honeytoken_1" {
   value = {
-    bucket        = "veilguard-prod-db-backup-8f70aa57"
-    token_id      = "9545eeb75411"
+    bucket        = "cloudsnare-prod-db-backup-693fb6af"
+    token_id      = "4cd34d0299ad"
     access_key_id = aws_iam_access_key.decoy_1.id
   }
 }
 
 
-# ============ Decoy 2: veilguard-admin-credentials-35002bf6 ============
+# ============ Decoy 2: cloudsnare-admin-credentials-6ee9fbc4 ============
 
 # --- The public bucket (the visible bait) ---
 resource "aws_s3_bucket" "decoy_2" {
-  bucket        = "veilguard-admin-credentials-35002bf6"
+  bucket        = "cloudsnare-admin-credentials-6ee9fbc4"
   force_destroy = true
   tags = {
-    Name      = "veilguard-admin-credentials-35002bf6"
-    veilguard = "decoy"
-    token_id  = "4b4a9d1e37ce"
+    Name      = "cloudsnare-admin-credentials-6ee9fbc4"
+    cloudsnare = "decoy"
+    token_id  = "5450f015507b"
   }
 }
 
@@ -130,11 +130,11 @@ resource "aws_s3_bucket_policy" "decoy_2" {
 
 # --- The honeytoken: a REAL but powerless IAM user + key ---
 resource "aws_iam_user" "decoy_2" {
-  name          = "veilguard-admin-credentials-35002bf6"
+  name          = "cloudsnare-admin-credentials-6ee9fbc4"
   force_destroy = true
   tags = {
-    veilguard = "honeytoken"
-    token_id  = "4b4a9d1e37ce"
+    cloudsnare = "honeytoken"
+    token_id  = "5450f015507b"
   }
 }
 
@@ -159,30 +159,30 @@ resource "aws_s3_object" "decoy_2_token" {
     # Production credentials - DO NOT SHARE
     aws_access_key_id = ${aws_iam_access_key.decoy_2.id}
     aws_secret_access_key = ${aws_iam_access_key.decoy_2.secret}
-    # ref: 4b4a9d1e37ce
+    # ref: 5450f015507b
   EOT
 }
 
-# --- Output the real key id so VEILGUARD can watch CloudTrail for it ---
+# --- Output the real key id so CLOUDSNARE can watch CloudTrail for it ---
 output "honeytoken_2" {
   value = {
-    bucket        = "veilguard-admin-credentials-35002bf6"
-    token_id      = "4b4a9d1e37ce"
+    bucket        = "cloudsnare-admin-credentials-6ee9fbc4"
+    token_id      = "5450f015507b"
     access_key_id = aws_iam_access_key.decoy_2.id
   }
 }
 
 
-# ============ Decoy 3: veilguard-internal-api-keys-1380fada ============
+# ============ Decoy 3: cloudsnare-internal-api-keys-adcc4434 ============
 
 # --- The public bucket (the visible bait) ---
 resource "aws_s3_bucket" "decoy_3" {
-  bucket        = "veilguard-internal-api-keys-1380fada"
+  bucket        = "cloudsnare-internal-api-keys-adcc4434"
   force_destroy = true
   tags = {
-    Name      = "veilguard-internal-api-keys-1380fada"
-    veilguard = "decoy"
-    token_id  = "6eea4612a0c7"
+    Name      = "cloudsnare-internal-api-keys-adcc4434"
+    cloudsnare = "decoy"
+    token_id  = "3a13fcfb65b0"
   }
 }
 
@@ -211,11 +211,11 @@ resource "aws_s3_bucket_policy" "decoy_3" {
 
 # --- The honeytoken: a REAL but powerless IAM user + key ---
 resource "aws_iam_user" "decoy_3" {
-  name          = "veilguard-internal-api-keys-1380fada"
+  name          = "cloudsnare-internal-api-keys-adcc4434"
   force_destroy = true
   tags = {
-    veilguard = "honeytoken"
-    token_id  = "6eea4612a0c7"
+    cloudsnare = "honeytoken"
+    token_id  = "3a13fcfb65b0"
   }
 }
 
@@ -240,15 +240,15 @@ resource "aws_s3_object" "decoy_3_token" {
     # Production credentials - DO NOT SHARE
     aws_access_key_id = ${aws_iam_access_key.decoy_3.id}
     aws_secret_access_key = ${aws_iam_access_key.decoy_3.secret}
-    # ref: 6eea4612a0c7
+    # ref: 3a13fcfb65b0
   EOT
 }
 
-# --- Output the real key id so VEILGUARD can watch CloudTrail for it ---
+# --- Output the real key id so CLOUDSNARE can watch CloudTrail for it ---
 output "honeytoken_3" {
   value = {
-    bucket        = "veilguard-internal-api-keys-1380fada"
-    token_id      = "6eea4612a0c7"
+    bucket        = "cloudsnare-internal-api-keys-adcc4434"
+    token_id      = "3a13fcfb65b0"
     access_key_id = aws_iam_access_key.decoy_3.id
   }
 }

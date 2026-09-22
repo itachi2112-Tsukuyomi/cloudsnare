@@ -1,5 +1,5 @@
 """
-VEILGUARD RAG — ask (CLI).
+CLOUDSNARE RAG — ask (CLI).
 
 Ask the SOC console a plain-English question about your own data.
 

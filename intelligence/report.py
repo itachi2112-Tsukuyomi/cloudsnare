@@ -1,5 +1,5 @@
 """
-VEILGUARD Intelligence — incident report generator.
+CLOUDSNARE Intelligence — incident report generator.
 
 Produces a plain-English incident report from the analysis. Two modes:
 
@@ -19,7 +19,7 @@ import json
 def _template_report(intel, decoy_state):
     a = intel["attacker"]
     lines = []
-    lines.append("# VEILGUARD Incident Report\n")
+    lines.append("# CLOUDSNARE Incident Report\n")
 
     verdict = ("CONFIRMED BREACH" if a["confirmed_breach"]
                else "SUSPICIOUS ACTIVITY")
@@ -94,7 +94,7 @@ def _ai_report(intel, decoy_state, model):
     prompt = (
         "You are a cloud security analyst. Write a concise, professional "
         "incident report (Markdown) for a cloud deception platform called "
-        "VEILGUARD, based ONLY on these structured facts. Be factual and "
+        "CLOUDSNARE, based ONLY on these structured facts. Be factual and "
         "calm; do not invent details not present.\n\n"
         f"FACTS:\n{json.dumps(facts, indent=2, default=str)}\n\n"
         "Sections: Verdict, Summary, Attacker Profile, Techniques, "

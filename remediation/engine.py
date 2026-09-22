@@ -1,5 +1,5 @@
 """
-VEILGUARD Remediation — engine (approval state machine).
+CLOUDSNARE Remediation — engine (approval state machine).
 
 Turns Mapper findings into remediation recommendations, tracks their
 approval status, and applies ONLY the ones a human approved.
@@ -39,7 +39,7 @@ def build_recommendations(findings, decoy_state):
     recs = []
     for f in findings or []:
         # never remediate our own traps
-        if f.get("resource") in decoys or str(f.get("resource", "")).startswith("veilguard"):
+        if f.get("resource") in decoys or str(f.get("resource", "")).startswith("cloudsnare"):
             continue
         h = handler_for(f.get("type"))
         if not h:

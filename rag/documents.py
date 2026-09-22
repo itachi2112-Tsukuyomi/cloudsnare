@@ -1,7 +1,7 @@
 """
-VEILGUARD RAG — document builder.
+CLOUDSNARE RAG — document builder.
 
-RAG retrieves over a corpus of "documents". Here the corpus is VEILGUARD's
+RAG retrieves over a corpus of "documents". Here the corpus is CLOUDSNARE's
 own data: every capture, decoy, exposure, remediation, and the intelligence
 summary becomes one short text document with metadata.
 

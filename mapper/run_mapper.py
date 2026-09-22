@@ -1,5 +1,5 @@
 """
-VEILGUARD Mapper — entry point (the MAP stage).
+CLOUDSNARE Mapper — entry point (the MAP stage).
 
 Run this to scan your AWS account for internet-facing resources.
 Each run:

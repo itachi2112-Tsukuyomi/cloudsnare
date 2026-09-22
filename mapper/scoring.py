@@ -1,5 +1,5 @@
 """
-VEILGUARD Mapper — exposure scoring.
+CLOUDSNARE Mapper — exposure scoring.
 
 Turns a list of findings into a single 0-100 "Exposure Score" — a composite,
 at-a-glance measure of how exposed the account currently is right now.

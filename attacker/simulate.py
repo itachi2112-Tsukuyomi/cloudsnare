@@ -1,5 +1,5 @@
 """
-VEILGUARD Attacker Simulation (the demo adversary).
+CLOUDSNARE Attacker Simulation (the demo adversary).
 
 This script plays an attacker who has gained a foothold in the account and
 goes hunting. It is intentionally scripted so the demo is reliable and
@@ -12,7 +12,7 @@ Attack chain (mirrors a real credential-compromise scenario):
   4. USE       — authenticate with the STOLEN honeytoken key and probe
 
 Step 4 is the money shot: using the honeytoken key generates a CloudTrail
-management event tagged with that key's ID. VEILGUARD's Capture Engine then
+management event tagged with that key's ID. CLOUDSNARE's Capture Engine then
 detects it as a CONFIRMED BREACH — and knows exactly which decoy leaked it.
 
 SAFETY: the stolen key is a deny-all honeytoken, so every action it attempts
@@ -43,7 +43,7 @@ JUICY_HINTS = ("backup", "credential", "prod", "secret", "admin",
 
 def _banner():
     print("=" * 64)
-    print("  VEILGUARD ATTACKER SIMULATION")
+    print("  CLOUDSNARE ATTACKER SIMULATION")
     print("  (controlled demo adversary — targets only your own decoys)")
     print("=" * 64)
 
@@ -146,11 +146,11 @@ def use_stolen(region, key_id, secret):
 
     print("\n[!] The stolen key has now been used. Every use was a deny-all")
     print("    honeytoken, so nothing real happened — but CloudTrail recorded")
-    print("    it. Run:  python -m capture.watch   to see VEILGUARD catch it.")
+    print("    it. Run:  python -m capture.watch   to see CLOUDSNARE catch it.")
 
 
 def main():
-    ap = argparse.ArgumentParser(description="VEILGUARD Attacker Simulation")
+    ap = argparse.ArgumentParser(description="CLOUDSNARE Attacker Simulation")
     ap.add_argument("--step", action="store_true",
                     help="pause between phases (good for live demos)")
     ap.add_argument("--target", help="force a specific decoy bucket name")

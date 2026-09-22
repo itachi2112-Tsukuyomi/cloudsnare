@@ -1,8 +1,8 @@
 """
-VEILGUARD Remediation — the fix library.
+CLOUDSNARE Remediation — the fix library.
 
 Each exposure type maps to a SAFE, well-defined remediation. These are the
-only actions VEILGUARD is ever allowed to take on real resources, and only
+only actions CLOUDSNARE is ever allowed to take on real resources, and only
 after a human approves. Each entry has:
 
   recommend(finding) -> human-readable description of the proposed fix
@@ -103,7 +103,7 @@ def _elb_recommend(f):
 
 
 # ---- Registry --------------------------------------------------------------
-# auto=True means VEILGUARD can apply it (after approval).
+# auto=True means CLOUDSNARE can apply it (after approval).
 # auto=False means recommend-only; the human must do it manually.
 
 REGISTRY = {

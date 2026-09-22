@@ -1,5 +1,5 @@
 """
-VEILGUARD Agent — the tool layer.
+CLOUDSNARE Agent — the tool layer.
 
 These are the ONLY actions the agent can perform. The LLM never touches AWS;
 it can only request one of these pre-written functions. Each "create" action
@@ -51,8 +51,8 @@ def create_secure_bucket(region, name, **_):
     Create an S3 bucket that is PRIVATE, ENCRYPTED, and VERSIONED by default.
     There is no parameter to make it public - security is not optional here.
     """
-    if str(name).startswith("veilguard"):
-        return {"ok": False, "error": "Name can't start with 'veilguard' (reserved for decoys)."}
+    if str(name).startswith("cloudsnare"):
+        return {"ok": False, "error": "Name can't start with 'cloudsnare' (reserved for decoys)."}
 
     s3 = boto3.client("s3", region_name=region)
     try:
@@ -91,11 +91,11 @@ def create_secure_ec2(region, name, instance_type="t2.micro", **_):
     ec2 = boto3.client("ec2", region_name=region)
     try:
         # 1. A dedicated, locked-down security group: NO inbound rules at all.
-        sg_name = f"veilguard-agent-sg-{name}"
+        sg_name = f"cloudsnare-agent-sg-{name}"
         try:
             sg = ec2.create_security_group(
                 GroupName=sg_name,
-                Description="VEILGUARD agent - locked down, no internet inbound")
+                Description="CLOUDSNARE agent - locked down, no internet inbound")
             sg_id = sg["GroupId"]
         except ClientError as e:
             if "InvalidGroup.Duplicate" in str(e):
@@ -121,7 +121,7 @@ def create_secure_ec2(region, name, instance_type="t2.micro", **_):
             TagSpecifications=[{
                 "ResourceType": "instance",
                 "Tags": [{"Key": "Name", "Value": name},
-                         {"Key": "created_by", "Value": "veilguard-agent"}]}])
+                         {"Key": "created_by", "Value": "cloudsnare-agent"}]}])
         iid = r["Instances"][0]["InstanceId"]
         return {"ok": True,
                 "summary": f"Instance '{name}' ({iid}, {instance_type}) launched with a "

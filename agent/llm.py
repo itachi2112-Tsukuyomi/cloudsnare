@@ -1,5 +1,5 @@
 """
-VEILGUARD — shared LLM client.
+CLOUDSNARE — shared LLM client.
 
 One place that talks to whatever LLM provider is configured, so the agent and
 the RAG chat don't each need provider-specific code.

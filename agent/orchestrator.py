@@ -1,5 +1,5 @@
 """
-VEILGUARD Agent - orchestrator.
+CLOUDSNARE Agent - orchestrator.
 
 Brain-and-hands separation:
   - The LLM is the BRAIN: reads the conversation and tool menu, asks

@@ -1,5 +1,5 @@
 """
-VEILGUARD Deception Engine — Terraform generator.
+CLOUDSNARE Deception Engine — Terraform generator.
 
 We describe decoys as Infrastructure as Code (Terraform): reproducible,
 reviewable, and removable with a single `terraform destroy`.
@@ -30,7 +30,7 @@ resource "aws_s3_bucket" "{b}" {{
   force_destroy = true
   tags = {{
     Name      = "{bucket_name}"
-    veilguard = "decoy"
+    cloudsnare = "decoy"
     token_id  = "{token_id}"
   }}
 }}
@@ -63,7 +63,7 @@ resource "aws_iam_user" "{b}" {{
   name          = "{bucket_name}"
   force_destroy = true
   tags = {{
-    veilguard = "honeytoken"
+    cloudsnare = "honeytoken"
     token_id  = "{token_id}"
   }}
 }}
@@ -93,7 +93,7 @@ resource "aws_s3_object" "{b}_token" {{
   EOT
 }}
 
-# --- Output the real key id so VEILGUARD can watch CloudTrail for it ---
+# --- Output the real key id so CLOUDSNARE can watch CloudTrail for it ---
 output "honeytoken_{idx}" {{
   value = {{
     bucket        = "{bucket_name}"

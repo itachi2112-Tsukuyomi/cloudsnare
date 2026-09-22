@@ -1,5 +1,5 @@
 """
-VEILGUARD Intelligence — analysis (the LEARN stage).
+CLOUDSNARE Intelligence — analysis (the LEARN stage).
 
 Turns raw captures into insight. Pure functions, unit-tested offline.
 
@@ -130,7 +130,7 @@ def prioritize(real_findings, captures):
     ranked = []
     for f in real_findings or []:
         # skip our own decoys
-        if str(f.get("resource", "")).startswith("veilguard"):
+        if str(f.get("resource", "")).startswith("cloudsnare"):
             continue
         boost = 1 if f.get("service") in hot_services else 0
         ranked.append({**f, "attacker_interest": bool(boost)})

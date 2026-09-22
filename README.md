@@ -1,8 +1,8 @@
-# VEILGUARD
+# CLOUDSNARE
 
 **Cloud Attack Surface Intelligence & Deception Platform**
 
-VEILGUARD continuously **maps** everything an AWS account exposes to the
+CLOUDSNARE continuously **maps** everything an AWS account exposes to the
 internet, plants realistic **decoys** across that attack surface, **captures**
 every attacker who takes the bait, **learns** from their behaviour, and — with
 human approval — **acts** to remediate the real exposures.
@@ -33,7 +33,7 @@ reliably.
 
 ## Honest positioning
 
-VEILGUARD is a student-scale implementation of **cloud deception-based threat
+CLOUDSNARE is a student-scale implementation of **cloud deception-based threat
 intelligence** — the same category commercial platforms like Wiz and Acalvio
 operate in. It combines three real security domains (attack surface management,
 deception, and threat intelligence) into one working loop. It is not a claim of
@@ -45,8 +45,8 @@ systems work end to end.
 ## Security by design
 
 - **Least privilege, split by role.** The scanner uses a read-only IAM policy
-  (`iam/veilguard-scanner-policy.json`). Remediation uses a *separate*,
-  narrowly scoped write policy (`iam/veilguard-remediation-policy.json`).
+  (`iam/cloudsnare-scanner-policy.json`). Remediation uses a *separate*,
+  narrowly scoped write policy (`iam/cloudsnare-remediation-policy.json`).
 - **Human-in-the-loop.** No real resource is changed without explicit approval.
 - **Harmless honeytokens.** Planted keys are deny-all: powerless yet fully
   logged when used.

@@ -1,5 +1,5 @@
 """
-VEILGUARD — one-command launcher.
+CLOUDSNARE — one-command launcher.
 
 Starts the API server and opens the SOC dashboard in your browser.
 
@@ -29,7 +29,7 @@ def _open_when_ready():
 
 
 def main():
-    print("[*] Starting VEILGUARD API + dashboard...")
+    print("[*] Starting CLOUDSNARE API + dashboard...")
     threading.Thread(target=_open_when_ready, daemon=True).start()
     try:
         subprocess.run([

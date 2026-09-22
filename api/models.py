@@ -1,5 +1,5 @@
 """
-VEILGUARD API — response models (Pydantic).
+CLOUDSNARE API — response models (Pydantic).
 
 These define the shape of every API response, which gives us:
   - automatic validation

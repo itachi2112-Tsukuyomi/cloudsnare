@@ -1,1 +1,1 @@
-"""VEILGUARD Agent — conversational, secure-by-default AWS provisioning."""
+"""CLOUDSNARE Agent — conversational, secure-by-default AWS provisioning."""

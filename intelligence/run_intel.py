@@ -1,5 +1,5 @@
 """
-VEILGUARD Intelligence Engine — entry point (the LEARN stage).
+CLOUDSNARE Intelligence Engine — entry point (the LEARN stage).
 
 Reads the captures (Part 4/5), the decoy state (deploy time), and the
 latest Mapper snapshot (real exposures), then produces:

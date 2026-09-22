@@ -1,5 +1,5 @@
 """
-VEILGUARD Deception Engine — entry point (the DECEIVE stage).
+CLOUDSNARE Deception Engine — entry point (the DECEIVE stage).
 
 Reads the latest Mapper snapshot to learn your real naming style,
 generates Mirror Decoys + honeytokens, writes Terraform, and deploys.
@@ -9,7 +9,7 @@ Usage (from project root, venv active):
     python -m deception.deploy --plan     # show what WOULD happen, no changes
     python -m deception.deploy --destroy  # tear everything down
 
-VEILGUARD calls Terraform through Python using config.TERRAFORM_BIN, so
+CLOUDSNARE calls Terraform through Python using config.TERRAFORM_BIN, so
 this works even if `terraform` isn't on your PATH.
 """
 
@@ -41,7 +41,7 @@ def _real_resource_names():
     names = []
     for f in latest.get("findings", []):
         # skip our own decoys if they show up
-        if f.get("resource", "").startswith("veilguard"):
+        if f.get("resource", "").startswith("cloudsnare"):
             continue
         names.append(f.get("resource", ""))
     return [n for n in names if n]
@@ -107,7 +107,7 @@ def _check_terraform_bin():
     if not os.path.exists(TERRAFORM_BIN):
         print(f"[X] Terraform not found at: {TERRAFORM_BIN}")
         print("    Set the correct path in config.py (TERRAFORM_BIN) or via")
-        print("    the VEILGUARD_TERRAFORM_BIN environment variable.")
+        print("    the CLOUDSNARE_TERRAFORM_BIN environment variable.")
         sys.exit(1)
 
 
@@ -119,7 +119,7 @@ def build_decoys():
     decoys = []
     for base in base_names:
         # ensure global-uniqueness for the actual bucket name
-        bucket = f"veilguard-{base}-{_unique_suffix()}"[:63].lower()
+        bucket = f"cloudsnare-{base}-{_unique_suffix()}"[:63].lower()
         token = generate_honeytoken(bucket)
         decoys.append({"bucket": bucket, "base": base, "token": token})
 
@@ -160,7 +160,7 @@ def print_state(state):
 
 
 def main():
-    ap = argparse.ArgumentParser(description="VEILGUARD Deception Engine")
+    ap = argparse.ArgumentParser(description="CLOUDSNARE Deception Engine")
     ap.add_argument("--plan", action="store_true", help="preview only, no changes")
     ap.add_argument("--destroy", action="store_true", help="tear down all decoys")
     args = ap.parse_args()
