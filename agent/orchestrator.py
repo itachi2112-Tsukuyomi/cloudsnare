@@ -153,11 +153,12 @@ class Agent:
     # ---- OpenRouter (OpenAI-compatible) tool loop ----
 
     def _send_openrouter(self, user_message):
-        from agent.llm import _openrouter_client, _to_openai_tools, LLMUnavailable
+        from agent.llm import (_openrouter_client, _to_openai_tools,
+                               LLMUnavailable, openai_first_message)
         try:
             client = _openrouter_client()
         except LLMUnavailable as e:
-            return {"reply": f"[Agent unavailable] {e}"}
+            return {"reply": f"[Agent unavailable] {e}", "pending": None}
 
         tools = _to_openai_tools(TOOL_SCHEMAS)
         self.messages.append({"role": "user", "content": user_message})
@@ -166,7 +167,7 @@ class Agent:
             resp = client.chat.completions.create(
                 model=self.model, messages=self.messages,
                 tools=tools, max_tokens=1024)
-            m = resp.choices[0].message
+            m = openai_first_message(resp)
 
             if m.tool_calls:
                 # Resolve every gate BEFORE touching history, so a deferral can
@@ -207,9 +208,10 @@ class Agent:
                 continue
 
             self.messages.append({"role": "assistant", "content": m.content or ""})
-            return {"reply": m.content or ""}
+            return {"reply": m.content or "", "pending": None}
 
-        return {"reply": "Stopped after too many tool steps. Please rephrase."}
+        return {"reply": "Stopped after too many tool steps. Please rephrase.",
+                "pending": None}
 
     # ---- Anthropic (Claude) tool loop ----
 
@@ -218,7 +220,7 @@ class Agent:
         try:
             client = _anthropic_client()
         except LLMUnavailable as e:
-            return {"reply": f"[Agent unavailable] {e}"}
+            return {"reply": f"[Agent unavailable] {e}", "pending": None}
 
         self.messages.append({"role": "user", "content": user_message})
         for _ in range(6):
@@ -260,6 +262,7 @@ class Agent:
             text = "".join(b.text for b in resp.content
                            if getattr(b, "type", "") == "text")
             self.messages.append({"role": "assistant", "content": resp.content})
-            return {"reply": text}
+            return {"reply": text, "pending": None}
 
-        return {"reply": "Stopped after too many tool steps. Please rephrase."}
+        return {"reply": "Stopped after too many tool steps. Please rephrase.",
+                "pending": None}

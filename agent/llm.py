@@ -18,7 +18,34 @@ import json
 
 
 class LLMUnavailable(Exception):
-    pass
+    """No key / no SDK — the provider was never reachable."""
+
+
+class ProviderError(Exception):
+    """The provider was reached but refused or returned nothing usable."""
+
+
+def openai_first_message(resp):
+    """
+    Pull the first message out of an OpenAI-shaped response.
+
+    On a rate limit or an upstream failure OpenRouter returns {"error": ...}
+    with no choices, and the SDK still parses that into a response object —
+    so indexing choices blindly raised an opaque
+    "'NoneType' object is not subscriptable" instead of saying what happened.
+    """
+    choices = getattr(resp, "choices", None)
+    if not choices:
+        err = getattr(resp, "error", None)
+        detail = ""
+        if isinstance(err, dict):
+            detail = err.get("message") or str(err)
+        elif err:
+            detail = str(err)
+        raise ProviderError(
+            detail or "the provider returned no response — free models are "
+                      "rate limited, so try again in a moment.")
+    return choices[0].message
 
 
 def _provider():
@@ -77,7 +104,7 @@ def simple_chat(prompt, system=None, max_tokens=800):
                [{"role": "user", "content": prompt}]
         resp = client.chat.completions.create(
             model=LLM_MODEL, messages=msgs, max_tokens=max_tokens)
-        return resp.choices[0].message.content or ""
+        return openai_first_message(resp).content or ""
     else:
         client = _anthropic_client()
         from config import ANTHROPIC_MODEL
