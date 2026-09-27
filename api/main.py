@@ -35,7 +35,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import PlainTextResponse, FileResponse
+from fastapi.responses import PlainTextResponse, FileResponse, JSONResponse
 
 from config import (
     AWS_REGION, SNAPSHOT_DIR, DECOY_STATE_FILE, CAPTURE_FILE,
@@ -51,13 +51,42 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# Allow the React dashboard (a different port, or file://) to call this API.
+# The dashboard is served by this same app at /dashboard, so it is same-origin
+# and needs no CORS grant. We still allow the localhost origins so the dashboard
+# can be hosted on a separate dev port, but never "*": several endpoints below
+# change real AWS resources, and a wildcard would let any site the user happens
+# to have open drive them.
+ALLOWED_ORIGINS = [
+    "http://localhost:8000", "http://127.0.0.1:8000",
+    "http://localhost:5173", "http://127.0.0.1:5173",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],          # demo-friendly; tighten for production
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=ALLOWED_ORIGINS,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type"],
 )
+
+# CORS alone does not stop a cross-site POST: a plain HTML form can send one
+# without a preflight, and /api/scan and /api/remediations/apply take no body,
+# so they would happily run. This guard rejects any state-changing request the
+# browser tells us came from another site. Local CLI tools send neither header
+# and are unaffected.
+_SAFE_METHODS = ("GET", "HEAD", "OPTIONS")
+
+
+@app.middleware("http")
+async def block_cross_site_writes(request, call_next):
+    if request.method not in _SAFE_METHODS:
+        origin = request.headers.get("origin")
+        if request.headers.get("sec-fetch-site") == "cross-site" or (
+                origin and origin not in ALLOWED_ORIGINS):
+            return JSONResponse(
+                status_code=403,
+                content={"detail": "Cross-site requests are not allowed."},
+            )
+    return await call_next(request)
 
 # Serve the dashboard from the same origin at /dashboard — this avoids any
 # browser file:// restrictions. Open http://localhost:8000/dashboard
@@ -313,30 +342,31 @@ def agent_chat(payload: dict):
     from agent.llm import available
 
     if not available():
-        return {"reply": "[Agent unavailable] Set OPENROUTER_API_KEY (or "
-                         "ANTHROPIC_API_KEY) and install the SDK.", "pending": None}
+        key_var = ("OPENROUTER_API_KEY" if LLM_PROVIDER == "openrouter"
+                   else "ANTHROPIC_API_KEY")
+        return {"reply": f"[Agent unavailable] Set {key_var} and install the SDK "
+                         f"(pip install -r requirements.txt).", "pending": None}
 
     message = (payload or {}).get("message", "").strip()
     session = (payload or {}).get("session", "default")
     confirm = (payload or {}).get("confirm", None)
     model = LLM_MODEL if LLM_PROVIDER == "openrouter" else ANTHROPIC_MODEL
 
-    holder = {"decision": confirm, "pending": None}
-
-    def _confirm(action_text):
-        if holder["decision"] is True:
-            return True
-        if holder["decision"] is False:
-            return False
-        holder["pending"] = action_text
-        return False  # defer — nothing executes until the UI confirms
-
     if session not in _AGENT_SESSIONS:
+        # A browser can't answer an inline prompt, so every write action defers:
+        # the agent hands back a description, the UI shows Confirm/Cancel, and
+        # the next call resolves it through resume().
         _AGENT_SESSIONS[session] = Agent(
-            region=AWS_REGION, model=model,
-            log_path=AGENT_AUDIT_LOG, confirm_fn=_confirm)
+            region=AWS_REGION, model=model, log_path=AGENT_AUDIT_LOG,
+            confirm_fn=lambda _action: None)
     agent = _AGENT_SESSIONS[session]
-    agent.confirm_fn = _confirm
 
-    result = agent.send(message)
-    return {"reply": result.get("reply", ""), "pending": holder["pending"]}
+    try:
+        if confirm is True or confirm is False:
+            result = agent.resume(confirm)
+        else:
+            result = agent.send(message)
+    except Exception as e:  # noqa: BLE001 - surface provider errors to the UI
+        return {"reply": f"[Agent error] {type(e).__name__}: {e}", "pending": None}
+
+    return {"reply": result.get("reply", ""), "pending": result.get("pending")}

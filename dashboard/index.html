@@ -299,8 +299,9 @@ function Chat({endpoint, mode, suggestions}){
         push("bot", r.answer, {sources:r.sources?r.sources.length:0, ragmode:r.mode});
       }else{
         const r=await jpost(endpoint,{message:text||"", session, confirm});
-        if(r.pending){ setPending(r.pending); }
-        else { setPending(null); push("bot", r.reply||"(no response)"); }
+        if(r.reply) push("bot", r.reply);
+        else if(!r.pending) push("bot","(no response)");
+        setPending(r.pending||null);
       }
     }catch(e){ push("bot","[error contacting the assistant]"); }
     setBusy(false);
@@ -398,7 +399,7 @@ function App(){
     <div>
       <header>
         <div className="head-in">
-          <div className="brand"><h1>VEIL<span>GUARD</span></h1><span className="sub">SOC Console</span></div>
+          <div className="brand"><h1>CLOUD<span>SNARE</span></h1><span className="sub">SOC Console</span></div>
           <div className="controls">
             <div className="api-dot"><span className={"dot "+(up?"up":"down")}></span>{up?"API connected":"API offline"}</div>
             <button className="act" onClick={load}>Refresh</button>

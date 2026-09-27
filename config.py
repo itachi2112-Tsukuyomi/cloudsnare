@@ -69,7 +69,7 @@ BREACH_SNS_TOPIC = "cloudsnare-breach-alerts"
 # The AI incident report is OPTIONAL. If an Anthropic API key is present
 # (env var ANTHROPIC_API_KEY), CLOUDSNARE writes an AI summary. Otherwise it
 # falls back to a clean template report — so the project never depends on a key.
-ANTHROPIC_MODEL = os.environ.get("CLOUDSNARE_AI_MODEL", "claude-sonnet-4-6")
+ANTHROPIC_MODEL = os.environ.get("CLOUDSNARE_AI_MODEL", "claude-sonnet-5")
 
 # ---- LLM provider (RAG chat + agent) ---------------------------------------
 # CLOUDSNARE's LLM features work with either Anthropic or an OpenAI-compatible

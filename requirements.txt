@@ -6,3 +6,9 @@ tabulate>=0.9.0
 fastapi>=0.110.0
 uvicorn[standard]>=0.29.0
 pydantic>=2.6.0
+
+# LLM providers for the RAG chat and the cloud assistant.
+# openai is the client for OpenRouter too (it speaks the OpenAI API).
+# Without these the chat silently falls back to retrieval-only mode.
+openai>=1.30.0
+anthropic>=0.40.0

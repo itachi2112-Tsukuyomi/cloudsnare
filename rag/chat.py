@@ -7,12 +7,10 @@ Ties retrieval and generation together:
   3. Ask the LLM to answer using ONLY that retrieved context (grounded,
      so it can't invent events that didn't happen).
 
-The LLM step is optional. With an ANTHROPIC_API_KEY it produces a natural
-answer. Without one, it falls back to returning the retrieved records
-directly — so the retrieval half is always demonstrable on its own.
+The LLM step is optional. With a provider key set (see config.LLM_PROVIDER) it
+produces a natural answer. Without one, it falls back to returning the retrieved
+records directly — so the retrieval half is always demonstrable on its own.
 """
-
-import os
 
 from rag.documents import build_documents
 from rag.retriever import TfidfRetriever
@@ -43,8 +41,14 @@ def retrieve(question, k=4):
     return retriever.query(question, k=k), len(docs)
 
 
-def _llm_answer(question, hits, model):
-    """Answer with the configured LLM, grounded in retrieved context. None on failure."""
+def _llm_answer(question, hits):
+    """
+    Answer with the configured LLM, grounded in retrieved context.
+
+    Returns (text, error). Exactly one is set. The error is passed back rather
+    than swallowed: a wrong model id or a rejected key used to look identical
+    to "no key configured", which made the chat impossible to debug.
+    """
     context = "\n".join(f"- {h['text']}" for h in hits)
     prompt = (
         "You are a SOC analyst assistant for the CLOUDSNARE cloud deception "
@@ -55,23 +59,21 @@ def _llm_answer(question, hits, model):
         f"QUESTION: {question}\n\n"
         "Answer concisely and factually."
     )
+    from agent.llm import simple_chat, LLMUnavailable
     try:
-        from agent.llm import simple_chat, LLMUnavailable
-        try:
-            return simple_chat(prompt, max_tokens=500)
-        except LLMUnavailable:
-            return None
-    except Exception:
-        return None
+        return simple_chat(prompt, max_tokens=500), None
+    except LLMUnavailable as e:
+        return None, str(e)
+    except Exception as e:  # noqa: BLE001 - provider/network errors
+        return None, f"{type(e).__name__}: {e}"
 
 
 def answer(question, k=4):
     """
     Full RAG answer. Returns dict:
-      { answer, mode, sources: [retrieved docs] }
+      { answer, mode, sources: [retrieved docs], error }
     """
-    from config import ANTHROPIC_MODEL
-    hits, corpus_size = retrieve(question, k=k)
+    hits, _corpus_size = retrieve(question, k=k)
 
     if not hits:
         return {
@@ -79,15 +81,30 @@ def answer(question, k=4):
                       "capture, intel) so there is data to search.",
             "mode": "empty",
             "sources": [],
+            "error": None,
         }
 
-    llm = _llm_answer(question, hits, ANTHROPIC_MODEL)
-    if llm:
-        return {"answer": llm, "mode": "rag", "sources": hits}
+    text, error = _llm_answer(question, hits)
+    if text:
+        return {"answer": text, "mode": "rag", "sources": hits, "error": None}
 
-    # retrieval-only fallback (no API key): show what was found
-    lines = ["(Retrieval-only mode — set ANTHROPIC_API_KEY for natural answers.)",
+    # Retrieval still works without a provider, so always show the records —
+    # but name the actual reason generation was skipped, and name the key the
+    # configured provider really needs.
+    from config import LLM_PROVIDER
+    key_var = ("OPENROUTER_API_KEY" if LLM_PROVIDER == "openrouter"
+               else "ANTHROPIC_API_KEY")
+    hint = error if key_var in (error or "") else \
+        f"{error} Set {key_var} for natural answers."
+    lines = [f"(Retrieval-only mode — {hint})",
              "Most relevant records to your question:"]
     for h in hits:
         lines.append(f"  • {h['text']}")
-    return {"answer": "\n".join(lines), "mode": "retrieval-only", "sources": hits}
+    return {"answer": "\n".join(lines), "mode": "retrieval-only",
+            "sources": hits, "error": error}
+
+
+
+
+
+

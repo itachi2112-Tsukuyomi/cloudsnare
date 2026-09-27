@@ -48,27 +48,54 @@ def _sg_recommend(f):
             f"({f['detail']}).")
 
 
+def _perm_label(perm):
+    """(proto, port) label for a rule, matching how the scanner builds finding ids."""
+    proto = perm.get("IpProtocol", "-1")
+    if proto == "-1":
+        return proto, "ALL"
+    frm, to = perm.get("FromPort", "?"), perm.get("ToPort", "?")
+    return proto, (f"{frm}" if frm == to else f"{frm}-{to}")
+
+
 def _sg_apply(f, region):
     # finding id looks like: sg:{GroupId}:{proto}:{port}
-    parts = f["id"].split(":")
-    group_id = parts[1]
+    # Only the rule the human approved is revoked — matching on protocol and
+    # port, not just "every internet-open rule on this group". Approving a fix
+    # for one open port must never silently close others.
+    _, group_id, proto, port = f["id"].split(":", 3)
     ec2 = boto3.client("ec2", region_name=region)
 
     sgs = ec2.describe_security_groups(GroupIds=[group_id])["SecurityGroups"]
     revoked = 0
     for sg in sgs:
         for perm in sg.get("IpPermissions", []):
-            open_ranges = [r for r in perm.get("IpRanges", [])
-                           if r.get("CidrIp") == "0.0.0.0/0"]
-            if not open_ranges:
+            if _perm_label(perm) != (proto, port):
                 continue
-            revoke_perm = {k: perm[k] for k in ("IpProtocol", "FromPort", "ToPort")
-                           if k in perm}
-            revoke_perm["IpRanges"] = [{"CidrIp": "0.0.0.0/0"}]
+
+            # The scanner flags a rule open to either 0.0.0.0/0 or ::/0, so the
+            # fix has to be able to revoke both.
+            revoke = {"IpProtocol": perm["IpProtocol"]}
+            for k in ("FromPort", "ToPort"):
+                if k in perm:
+                    revoke[k] = perm[k]
+            if any(r.get("CidrIp") == "0.0.0.0/0" for r in perm.get("IpRanges", [])):
+                revoke["IpRanges"] = [{"CidrIp": "0.0.0.0/0"}]
+            if any(r.get("CidrIpv6") == "::/0" for r in perm.get("Ipv6Ranges", [])):
+                revoke["Ipv6Ranges"] = [{"CidrIpv6": "::/0"}]
+            if "IpRanges" not in revoke and "Ipv6Ranges" not in revoke:
+                continue
+
             ec2.revoke_security_group_ingress(
-                GroupId=group_id, IpPermissions=[revoke_perm])
+                GroupId=group_id, IpPermissions=[revoke])
             revoked += 1
-    return f"Revoked {revoked} internet-open rule(s) on {group_id}."
+
+    if not revoked:
+        # Reporting "applied" here would leave the dashboard claiming a fix that
+        # never happened, so fail loudly instead.
+        raise RuntimeError(
+            f"No internet-open rule matching {proto}/{port} found on {group_id}. "
+            f"It may already be closed — re-run a scan to refresh the queue.")
+    return f"Revoked {revoked} internet-open rule(s) for {proto}/{port} on {group_id}."
 
 
 # ---- Lambda: public function URL -> delete the URL config -------------------
