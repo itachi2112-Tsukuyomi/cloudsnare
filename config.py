@@ -8,6 +8,16 @@ No AWS keys ever go in here. boto3 reads your keys from
 
 import os
 
+# Load a local .env if there is one, so the documented "copy .env.example to
+# .env" workflow actually takes effect — until now nothing read that file.
+# The path is anchored to this file so it works from any working directory,
+# and real environment variables still take precedence.
+try:
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
+except ImportError:
+    pass
+
 # ---- Region ----------------------------------------------------------------
 # Change this to your AWS region. Common ones:
 #   ap-south-1  = Mumbai (India)
