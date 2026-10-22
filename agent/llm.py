@@ -67,6 +67,45 @@ def _openrouter_client():
     return OpenAI(base_url=OPENROUTER_BASE_URL, api_key=key)
 
 
+def openrouter_routing(primary):
+    """
+    extra_body for an OpenRouter call: try `primary`, then the configured
+    fallbacks. OpenRouter moves down the list on 404s, rate limits and outages,
+    and reports which model actually answered in the response's `model` field.
+    """
+    from config import LLM_FALLBACK_MODELS
+    chain = [primary] + [m for m in LLM_FALLBACK_MODELS if m != primary]
+    return {"models": chain[:3]}
+
+
+_STATUS_HINTS = {401: "key rejected", 402: "out of credits",
+                 404: "model unavailable", 429: "rate limited"}
+
+
+def short_error(e):
+    """
+    One-line description of an LLM failure, fit to show in the UI.
+
+    The SDK's own str() embeds the provider's raw JSON body, which includes the
+    OpenRouter user id and upstream account ids — not something to put on a
+    screen during a demo, and unreadable anyway.
+    """
+    if isinstance(e, (LLMUnavailable, ProviderError)):
+        return str(e)
+    status = getattr(e, "status_code", None)
+    body = getattr(e, "body", None)
+    msg = None
+    if isinstance(body, dict):
+        err = body.get("error", body)
+        if isinstance(err, dict):
+            msg = err.get("message")
+    msg = msg or str(e).split(" - {", 1)[0]
+    if status:
+        hint = _STATUS_HINTS.get(status)
+        return f"{msg} (HTTP {status}{': ' + hint if hint else ''})"
+    return f"{type(e).__name__}: {msg}"
+
+
 def _to_openai_tools(tool_schemas):
     """Convert our tool schemas to OpenAI's function-calling format."""
     return [{
@@ -103,7 +142,8 @@ def simple_chat(prompt, system=None, max_tokens=800):
         msgs = ([{"role": "system", "content": system}] if system else []) + \
                [{"role": "user", "content": prompt}]
         resp = client.chat.completions.create(
-            model=LLM_MODEL, messages=msgs, max_tokens=max_tokens)
+            model=LLM_MODEL, messages=msgs, max_tokens=max_tokens,
+            extra_body=openrouter_routing(LLM_MODEL))
         return openai_first_message(resp).content or ""
     else:
         client = _anthropic_client()

@@ -154,7 +154,8 @@ class Agent:
 
     def _send_openrouter(self, user_message):
         from agent.llm import (_openrouter_client, _to_openai_tools,
-                               LLMUnavailable, openai_first_message)
+                               LLMUnavailable, openai_first_message,
+                               openrouter_routing)
         try:
             client = _openrouter_client()
         except LLMUnavailable as e:
@@ -166,7 +167,8 @@ class Agent:
         for _ in range(6):
             resp = client.chat.completions.create(
                 model=self.model, messages=self.messages,
-                tools=tools, max_tokens=1024)
+                tools=tools, max_tokens=1024,
+                extra_body=openrouter_routing(self.model))
             m = openai_first_message(resp)
 
             if m.tool_calls:

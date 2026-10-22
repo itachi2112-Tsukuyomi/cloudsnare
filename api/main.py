@@ -339,7 +339,7 @@ def agent_chat(payload: dict):
     from config import (AWS_REGION, LLM_PROVIDER, LLM_MODEL,
                         ANTHROPIC_MODEL, AGENT_AUDIT_LOG)
     from agent.orchestrator import Agent
-    from agent.llm import available, ProviderError
+    from agent.llm import available, ProviderError, short_error
 
     if not available():
         key_var = ("OPENROUTER_API_KEY" if LLM_PROVIDER == "openrouter"
@@ -369,6 +369,6 @@ def agent_chat(payload: dict):
     except ProviderError as e:
         return {"reply": f"[Provider] {e}", "pending": None}
     except Exception as e:  # noqa: BLE001 - surface provider errors to the UI
-        return {"reply": f"[Agent error] {type(e).__name__}: {e}", "pending": None}
+        return {"reply": f"[Agent error] {short_error(e)}", "pending": None}
 
     return {"reply": result.get("reply", ""), "pending": result.get("pending")}

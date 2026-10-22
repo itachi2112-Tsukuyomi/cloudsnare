@@ -12,6 +12,8 @@ produces a natural answer. Without one, it falls back to returning the retrieved
 records directly — so the retrieval half is always demonstrable on its own.
 """
 
+import os
+
 from rag.documents import build_documents
 from rag.retriever import TfidfRetriever
 
@@ -59,13 +61,18 @@ def _llm_answer(question, hits):
         f"QUESTION: {question}\n\n"
         "Answer concisely and factually."
     )
-    from agent.llm import simple_chat, LLMUnavailable
+    from agent.llm import simple_chat, short_error
     try:
-        return simple_chat(prompt, max_tokens=500), None
-    except LLMUnavailable as e:
-        return None, str(e)
+        # Reasoning models (the fallbacks among them) spend several hundred
+        # tokens thinking before they write anything; at 500 the budget ran out
+        # mid-thought and the answer came back empty.
+        text = simple_chat(prompt, max_tokens=2000)
     except Exception as e:  # noqa: BLE001 - provider/network errors
-        return None, f"{type(e).__name__}: {e}"
+        return None, short_error(e)
+    if not (text or "").strip():
+        return None, ("the model returned an empty answer (it likely ran out "
+                      "of tokens while reasoning).")
+    return text, None
 
 
 def answer(question, k=4):
@@ -89,13 +96,16 @@ def answer(question, k=4):
         return {"answer": text, "mode": "rag", "sources": hits, "error": None}
 
     # Retrieval still works without a provider, so always show the records —
-    # but name the actual reason generation was skipped, and name the key the
-    # configured provider really needs.
+    # but name the actual reason generation was skipped. Only point at the key
+    # when it's genuinely missing: telling someone to set a key they already
+    # set sends them chasing the wrong problem.
     from config import LLM_PROVIDER
     key_var = ("OPENROUTER_API_KEY" if LLM_PROVIDER == "openrouter"
                else "ANTHROPIC_API_KEY")
-    hint = error if key_var in (error or "") else \
-        f"{error} Set {key_var} for natural answers."
+    if os.environ.get(key_var) or key_var in (error or ""):
+        hint = error
+    else:
+        hint = f"{error} Set {key_var} for natural answers."
     lines = [f"(Retrieval-only mode — {hint})",
              "Most relevant records to your question:"]
     for h in hits:

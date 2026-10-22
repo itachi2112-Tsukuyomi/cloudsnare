@@ -90,9 +90,18 @@ LLM_PROVIDER = os.environ.get("CLOUDSNARE_LLM_PROVIDER", "openrouter")
 
 # OpenRouter (OpenAI-compatible) settings.
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
-# The model id. Nemotron 3 Super is free and supports a large context.
+# Primary model: free, supports tool calling, and answers in ~1-2s.
 LLM_MODEL = os.environ.get(
-    "CLOUDSNARE_LLM_MODEL", "nvidia/nemotron-3-super-120b-a12b:free")
+    "CLOUDSNARE_LLM_MODEL", "minimax/minimax-m3.1-flash:free")
+
+# Free models disappear or get rate-limited without notice — the previous
+# default started returning 404 one day with no warning. OpenRouter tries these
+# in order whenever the primary fails, so one dead model can't take the chat
+# down. Override with a comma-separated CLOUDSNARE_LLM_FALLBACKS.
+LLM_FALLBACK_MODELS = [m.strip() for m in os.environ.get(
+    "CLOUDSNARE_LLM_FALLBACKS",
+    "nvidia/nemotron-3.5-lightning:free,nvidia/nemotron-3-ultra-550b-a55b:free",
+).split(",") if m.strip()]
 
 # ---- Exposure scoring --------------------------------------------------------
 # Composite "Exposure Score" (0-100, higher = more exposed) computed from the
